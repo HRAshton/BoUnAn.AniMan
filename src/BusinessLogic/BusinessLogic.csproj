@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>Bounan.AniMan.BusinessLogic</AssemblyName>
+        <RootNamespace>Bounan.AniMan.BusinessLogic</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Common\Common.csproj" />
+      <ProjectReference Include="..\Dal\Dal.csproj" />
+      <ProjectReference Include="..\LoanApi\LoanApi\LoanApi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Amazon.Lambda.Logging.AspNetCore" Version="3.1.0" />
+      <PackageReference Include="AWSSDK.SQS" Version="3.7.300.60" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,17 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "LocalRunner": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "AWS_REGION": "eu-north-1",
+        "AWS_PROFILE": "hra",
+        "LoanApi__Token": "",
+        "Storage__TableName": "",
+        "Storage__SecondaryIndexName": "",
+        "Bot__NotificationQueueUrl": "",
+        "Dwn__NotificationQueueUrl": ""
+      }
+    }
+  }
+}
