@@ -1,22 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <OutputType>Exe</OutputType>
-        <AssemblyName>Bounan.AniMan.LocalRunner</AssemblyName>
-        <RootNamespace>Bounan.AniMan.LocalRunner</RootNamespace>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Bounan.AniMan.LocalRunner</AssemblyName>
+    <RootNamespace>Bounan.AniMan.LocalRunner</RootNamespace>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Endpoint\Endpoint.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Endpoint\Endpoint.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.10.0" />
-      <PackageReference Include="Amazon.Lambda.TestUtilities" Version="2.0.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.10.0" />
+    <PackageReference Include="Amazon.Lambda.TestUtilities" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+  </ItemGroup>
 
 </Project>

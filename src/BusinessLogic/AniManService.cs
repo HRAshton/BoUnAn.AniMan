@@ -1,25 +1,30 @@
-﻿using Amazon.Lambda.Core;
-using Bounan.AniMan.BusinessLogic.Interfaces;
+﻿using Bounan.AniMan.BusinessLogic.Interfaces;
 using Bounan.AniMan.BusinessLogic.Models;
 using Bounan.AniMan.Dal.Entities;
 using Bounan.AniMan.Dal.Repositories;
 using Bounan.Common.Enums;
 using Bounan.LoanApi.Interfaces;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
 
 namespace Bounan.AniMan.BusinessLogic;
 
-internal class AniMenService : IAniMenService
+internal partial class AniManService : IAniManService
 {
-	public AniMenService(
+	public AniManService(
+		ILogger<AniManService> logger,
 		IFilesRepository filesRepository,
 		IBotLoanApiClient botLoanApiClient,
 		INotificationService notificationService)
 	{
+		Logger = logger;
 		FilesRepository = filesRepository;
 		BotLoanApiClient = botLoanApiClient;
 		NotificationService = notificationService;
+
+		Log.AniManServiceCreated(Logger);
 	}
+
+	private ILogger<AniManService> Logger { get; }
 
 	private IFilesRepository FilesRepository { get; }
 
@@ -27,28 +32,28 @@ internal class AniMenService : IAniMenService
 
 	private INotificationService NotificationService { get; }
 
-	public async Task<BotResponse> GetAnimeAsync(BotRequest request, ILambdaContext context)
+	public async Task<BotResponse> GetAnimeAsync(BotRequest request)
 	{
-		context.Logger.LogLine($"Request: {JsonConvert.SerializeObject(request)}");
+		Log.ReceivedRequest(Logger, request);
 
 		var key = new VideoKey(request.MyAnimeListId, request.Dub, request.Episode);
 		var video = await FilesRepository.GetAnimeAsync(key);
-		context.Logger.LogLine($"Video: {JsonConvert.SerializeObject(video)}");
+		Log.VideoRetrieved(Logger, video);
 
 		switch (video?.Status)
 		{
 			case VideoStatus.Downloaded or VideoStatus.Failed:
-				context.Logger.LogLine("Returning video");
+				Log.ReturningVideoAsIs(Logger);
 				return new BotResponse(video.Status, video.FileId);
 
 			case VideoStatus.Pending or VideoStatus.Downloading:
-				context.Logger.LogLine("Returning pending");
+				Log.AttachingUserToAnime(Logger);
 				await FilesRepository.AttachUserToAnimeAsync(video, request.ChatId);
 				return new BotResponse(VideoStatus.Pending, null);
 
 			case null:
-				context.Logger.LogLine("Adding anime");
-				var status = await AddAnimeAsync(request, context);
+				Log.AddingAnime(Logger);
+				var status = await AddAnimeAsync(request);
 				return new BotResponse(status, null);
 
 			default:
@@ -56,39 +61,39 @@ internal class AniMenService : IAniMenService
 		}
 	}
 
-	public async Task<DwnQueueResponse> GetVideoToDownloadAsync(ILambdaContext context)
+	public async Task<DwnQueueResponse> GetVideoToDownloadAsync()
 	{
 		var file = await FilesRepository.PopSignedLinkToDownloadAsync();
 		return new DwnQueueResponse(file);
 	}
 
-	public async Task UpdateVideoStatusAsync(DwnResultNotification notification, ILambdaContext context)
+	public async Task UpdateVideoStatusAsync(DwnResultNotification notification)
 	{
 		var key = new VideoKey(notification.MyAnimeListId, notification.Dub, notification.Episode);
 		var video = await FilesRepository.GetAnimeAsync(key);
 		ArgumentNullException.ThrowIfNull(video);
-		context.Logger.LogLine($"Video: {JsonConvert.SerializeObject(video)}");
+		Log.VideoRetrieved(Logger, video);
 
 		var usersToNotify = video.Subscribers;
 
 		if (notification.FileId is null)
 		{
 			await FilesRepository.MarkAsFailedAsync(video);
-			context.Logger.LogLine("Marked as failed");
+			Log.MarkedAsFailed(Logger, video);
 		}
 		else
 		{
 			await FilesRepository.MarkAsDownloadedAsync(video, notification.FileId);
-			context.Logger.LogLine("Marked as downloaded");
+			Log.MarkedAsDownloaded(Logger, video);
 		}
 
-		await NotifyUsersAsync(usersToNotify, video, context);
+		await NotifyUsersAsync(usersToNotify, video);
 	}
 
-	private async Task<VideoStatus> AddAnimeAsync(BotRequest request, ILambdaContext context)
+	private async Task<VideoStatus> AddAnimeAsync(BotRequest request)
 	{
 		var videoInfos = await BotLoanApiClient.SearchAsync(request.MyAnimeListId);
-		context.Logger.LogLine($"VideoInfos: {JsonConvert.SerializeObject(videoInfos)}");
+		Log.VideoFetchedFromLoanApi(Logger, videoInfos);
 
 		var videoInfo = videoInfos.FirstOrDefault(x =>
 			x.MyAnimeListId == request.MyAnimeListId
@@ -101,30 +106,30 @@ internal class AniMenService : IAniMenService
 
 		var videoKey = new VideoKey(videoInfo.MyAnimeListId, videoInfo.Dub, videoInfo.Episode);
 		var fileEntity = await FilesRepository.AddAnimeAsync(videoKey);
-		context.Logger.LogLine("Added anime");
+		Log.VideoAddedToDatabase(Logger, fileEntity);
 
 		await FilesRepository.AttachUserToAnimeAsync(fileEntity, request.ChatId);
-		context.Logger.LogLine("Attached user");
+		Log.ChatIdAttachedToAnime(Logger);
 
 		await NotificationService.NotifyDwnAsync();
-		context.Logger.LogLine("Notified Dwn");
+		Log.DwnHasBeenNotified(Logger);
 
 		return fileEntity.Status;
 	}
 
-	private async Task NotifyUsersAsync(ICollection<long>? usersToNotify, FileEntity video, ILambdaContext context)
+	private async Task NotifyUsersAsync(ICollection<long>? usersToNotify, FileEntity video)
 	{
 		if (usersToNotify == null)
 		{
-			context.Logger.LogLine("No users to notify");
+			Log.NoUsersToNotify(Logger);
 			return;
 		}
 
-		context.Logger.LogLine($"Users to notify: {JsonConvert.SerializeObject(usersToNotify)}");
+		Log.UsersToNotify(Logger, string.Join(", ", usersToNotify));
 		var botNotification =
 			new BotNotification(usersToNotify, video.MyAnimeListId, video.Dub, video.Episode, video.FileId);
 
-		context.Logger.LogLine($"BotNotification: {JsonConvert.SerializeObject(botNotification)}");
+		Log.SendingNotificationToBot(Logger, botNotification);
 		await NotificationService.NotifyBotAsync(botNotification);
 	}
 }

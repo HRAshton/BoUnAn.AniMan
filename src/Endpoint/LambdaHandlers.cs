@@ -17,26 +17,26 @@ public class LambdaHandlers
 		Bootstrap.ConfigureServices(services);
 		var buildServiceProvider = services.BuildServiceProvider();
 
-		AniMenService = buildServiceProvider.GetRequiredService<IAniMenService>();
+		AniManService = buildServiceProvider.GetRequiredService<IAniManService>();
 	}
 
-	private IAniMenService AniMenService { get; }
+	private IAniManService AniManService { get; }
 
 	[LambdaFunction]
 	public Task<BotResponse> GetAnimeAsync(BotRequest request, ILambdaContext context)
 	{
-		return AniMenService.GetAnimeAsync(request, context);
+		return AniManService.GetAnimeAsync(request);
 	}
 
 	[LambdaFunction]
 	public Task<DwnQueueResponse> GetVideoToDownloadAsync(ILambdaContext context)
 	{
-		return AniMenService.GetVideoToDownloadAsync(context);
+		return AniManService.GetVideoToDownloadAsync();
 	}
 
 	[LambdaFunction]
 	public async Task UpdateVideoStatusAsync(DwnResultNotification notification, ILambdaContext context)
 	{
-		await AniMenService.UpdateVideoStatusAsync(notification, context);
+		await AniManService.UpdateVideoStatusAsync(notification);
 	}
 }

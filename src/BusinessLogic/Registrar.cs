@@ -10,7 +10,7 @@ public static class Registrar
 {
 	public static void RegisterServices(IServiceCollection services)
 	{
-		services.AddSingleton<IAniMenService, AniMenService>();
+		services.AddSingleton<IAniManService, AniManService>();
 		services.AddSingleton<INotificationService, NotificationService>();
 		
 		services.AddSingleton<IAmazonSQS, AmazonSQSClient>();
