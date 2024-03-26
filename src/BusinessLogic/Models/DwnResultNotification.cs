@@ -7,4 +7,4 @@ namespace Bounan.AniMan.BusinessLogic.Models;
 /// Describes the result of the download.
 /// </summary>
 public record DwnResultNotification(int MyAnimeListId, string Dub, int Episode, string? FileId)
-	: IVideoKey;
+	: IDwnResultNotification;
