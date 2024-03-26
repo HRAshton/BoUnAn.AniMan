@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Bounan.Common</RootNamespace>
+    <AssemblyName>Bounan.Common</AssemblyName>
   </PropertyGroup>
 
 </Project>
