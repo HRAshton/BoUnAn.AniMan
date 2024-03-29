@@ -10,6 +10,14 @@ BotResponse response;
 DwnQueueResponse videoToDownload;
 DwnResultNotification notification;
 
+if (true)
+{
+	videoToDownload = await lambdaHandlers.GetVideoToDownloadAsync(context);
+	Console.WriteLine(JsonConvert.SerializeObject(videoToDownload));
+	Assert(videoToDownload.VideoKey is not null, "Get the video to download");
+	return;
+}
+
 // 1. Request anime that does not exist
 // Should return Failed
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(-1, "AniDUB", 1, 2000000000000003), context);

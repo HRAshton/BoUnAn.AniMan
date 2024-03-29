@@ -49,7 +49,7 @@ internal partial class AniManService
 		public static partial void NoUsersToNotify(ILogger logger);
 
 		[LoggerMessage(13, LogLevel.Information, "Users to notify: {Users}")]
-		public static partial void UsersToNotify(ILogger logger, string users);
+		public static partial void UsersToNotify(ILogger logger, ICollection<long> users);
 
 		[LoggerMessage(14, LogLevel.Information, "Sending notification to Bot: {Notification}")]
 		public static partial void SendingNotificationToBot(ILogger logger, BotNotification notification);

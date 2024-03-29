@@ -3,6 +3,7 @@ using Bounan.AniMan.BusinessLogic.Models;
 using Bounan.AniMan.Dal.Entities;
 using Bounan.AniMan.Dal.Repositories;
 using Bounan.Common.Enums;
+using Bounan.Common.Models;
 using Bounan.LoanApi.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -125,7 +126,7 @@ internal partial class AniManService : IAniManService
 			return;
 		}
 
-		Log.UsersToNotify(Logger, string.Join(", ", usersToNotify));
+		Log.UsersToNotify(Logger, usersToNotify);
 		var botNotification =
 			new BotNotification(usersToNotify, video.MyAnimeListId, video.Dub, video.Episode, video.FileId);
 
