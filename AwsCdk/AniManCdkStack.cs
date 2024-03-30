@@ -19,12 +19,8 @@ namespace Bounan.AniMan.AwsCdk;
 
 public class AniManCdkStack : Stack
 {
-	private readonly string _baseName;
-
 	internal AniManCdkStack(Construct scope, string id, IStackProps? props = null) : base(scope, id, props)
 	{
-		_baseName = id;
-
 		var config = new ConfigurationBuilder()
 			.AddJsonFile("appsettings.json")
 			.AddEnvironmentVariables()
@@ -49,16 +45,18 @@ public class AniManCdkStack : Stack
 			logGroup);
 
 		Out("Bounan.AniMan.GetAnimeLambdaArn", getAnimeLambda.FunctionArn);
-		Out("Bounan.AniMan.GetVideoToDownloadLambdaArn", getVideoToDownloadLambda.FunctionArn);
-		Out("Bounan.AniMan.UpdateVideoStatusLambdaArn", updateVideoStatusLambda.FunctionArn);
-		Out("Bounan.AniMan.BotNotificationsQueue", botNotificationsQueue.QueueUrl);
-		Out("Bounan.AniMan.DwnNotificationsQueue", dwnNotificationsQueue.QueueUrl);
+		Out("Bounan.AniMan.GetVideoToDownloadLambdaName", getVideoToDownloadLambda.FunctionName);
+		Out("Bounan.AniMan.UpdateVideoStatusLambdaName", updateVideoStatusLambda.FunctionName);
+		Out("Bounan.AniMan.BotNotificationsQueueUrl", botNotificationsQueue.QueueUrl);
+		Out("Bounan.AniMan.BotNotificationsQueueArn", botNotificationsQueue.QueueArn);
+		Out("Bounan.AniMan.DwnNotificationsQueueUrl", dwnNotificationsQueue.QueueUrl);
+		Out("Bounan.AniMan.DwnNotificationsQueueArn", dwnNotificationsQueue.QueueArn);
 		Out("Bounan.AniMan.FilesTableName", table.TableName);
 	}
 
 	private (Table, GlobalSecondaryIndexProps) CreateFilesTable()
 	{
-		var filesTable = new Table(this, Name("FilesTable"), new TableProps
+		var filesTable = new Table(this, "FilesTable", new TableProps
 		{
 			PartitionKey = new Attribute
 			{
@@ -90,12 +88,12 @@ public class AniManCdkStack : Stack
 
 	private Queue CreateBotNotificationsQueue()
 	{
-		return new Queue(this, Name("BotNotificationsSqsQueue"));
+		return new Queue(this, "BotNotificationsSqsQueue");
 	}
 
 	private Queue CreateDwnNotificationsQueue()
 	{
-		return new Queue(this, Name("DwnNotificationsSqsQueue"), new QueueProps
+		return new Queue(this, "DwnNotificationsSqsQueue", new QueueProps
 		{
 			RetentionPeriod = Duration.Minutes(1)
 		});
@@ -103,7 +101,7 @@ public class AniManCdkStack : Stack
 
 	private LogGroup CreateLogGroup()
 	{
-		return new LogGroup(this, Name("LogGroup"), new LogGroupProps
+		return new LogGroup(this, "LogGroup", new LogGroupProps
 		{
 			Retention = RetentionDays.ONE_WEEK
 		});
@@ -111,19 +109,19 @@ public class AniManCdkStack : Stack
 
 	private void SetErrorAlarm(BounanCdkStackConfig bounanCdkStackConfig, ILogGroup logGroup)
 	{
-		var topic = new Topic(this, Name("LogGroupAlarmSnsTopic"), new TopicProps());
+		var topic = new Topic(this, "LogGroupAlarmSnsTopic", new TopicProps());
 
 		topic.AddSubscription(new EmailSubscription(bounanCdkStackConfig.AlertEmail));
 
-		var errorPattern = new MetricFilter(this, Name("LogGroupErrorPattern"), new MetricFilterProps
+		var errorPattern = new MetricFilter(this, "LogGroupErrorPattern", new MetricFilterProps
 		{
 			LogGroup = logGroup,
 			FilterPattern = FilterPattern.AnyTerm("ERROR", "Error", "error"),
-			MetricNamespace = Name("MetricNamespace"),
+			MetricNamespace = "MetricNamespace",
 			MetricName = "ErrorCount"
 		});
 
-		_ = new Alarm(this, Name("LogGroupErrorAlarm"), new AlarmProps
+		_ = new Alarm(this, "LogGroupErrorAlarm", new AlarmProps
 		{
 			Metric = errorPattern.Metric(),
 			Threshold = 1,
@@ -161,7 +159,7 @@ public class AniManCdkStack : Stack
 		});
 
 		var functions = methods
-			.Select(name => new Function(this, Name($"LambdaHandlers.{name}"), new FunctionProps
+			.Select(name => new Function(this, $"LambdaHandlers.{name}", new FunctionProps
 			{
 				Runtime = Runtime.DOTNET_8,
 				Code = asset,
@@ -188,8 +186,6 @@ public class AniManCdkStack : Stack
 
 		return (functions[0], functions[1], functions[2]);
 	}
-
-	private string Name(string name) => $"{_baseName}-{name}";
 
 	private void Out(string key, string value)
 	{
