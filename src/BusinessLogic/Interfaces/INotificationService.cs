@@ -6,5 +6,5 @@ internal interface INotificationService
 {
 	Task NotifyBotAsync(BotNotification notification);
 
-	Task NotifyDwnAsync();
+	Task NotifyDwnAsync(int numberOfNotifications);
 }

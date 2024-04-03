@@ -75,8 +75,6 @@ internal partial class AniManService : IAniManService
 		ArgumentNullException.ThrowIfNull(video);
 		Log.VideoRetrieved(Logger, video);
 
-		var usersToNotify = video.Subscribers;
-
 		if (notification.FileId is null)
 		{
 			await FilesRepository.MarkAsFailedAsync(video);
@@ -88,7 +86,8 @@ internal partial class AniManService : IAniManService
 			Log.MarkedAsDownloaded(Logger, video);
 		}
 
-		await NotifyUsersAsync(usersToNotify, video);
+		var usersToNotify = video.Subscribers;
+		await NotifyUsersAsync(video, usersToNotify, notification.FileId);
 	}
 
 	private async Task<VideoStatus> AddAnimeAsync(BotRequest request)
@@ -122,15 +121,15 @@ internal partial class AniManService : IAniManService
 		await FilesRepository.AttachUserToAnimeAsync(requestedFileEntity, request.ChatId);
 		Log.ChatIdAttachedToAnime(Logger);
 
-		await NotificationService.NotifyDwnAsync();
+		await NotificationService.NotifyDwnAsync(dubEpisodes.Length);
 		Log.DwnHasBeenNotified(Logger);
 
 		return requestedFileEntity.Status;
 	}
 
-	private async Task NotifyUsersAsync(ICollection<long>? usersToNotify, FileEntity video)
+	private async Task NotifyUsersAsync(IVideoKey videoKey, ICollection<long>? usersToNotify, string? fileId)
 	{
-		if (usersToNotify == null)
+		if (usersToNotify is null || usersToNotify.Count == 0)
 		{
 			Log.NoUsersToNotify(Logger);
 			return;
@@ -138,7 +137,7 @@ internal partial class AniManService : IAniManService
 
 		Log.UsersToNotify(Logger, usersToNotify);
 		var botNotification =
-			new BotNotification(usersToNotify, video.MyAnimeListId, video.Dub, video.Episode, video.FileId);
+			new BotNotification(usersToNotify, videoKey.MyAnimeListId, videoKey.Dub, videoKey.Episode, fileId);
 
 		Log.SendingNotificationToBot(Logger, botNotification);
 		await NotificationService.NotifyBotAsync(botNotification);

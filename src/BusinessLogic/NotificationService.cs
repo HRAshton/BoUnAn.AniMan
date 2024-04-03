@@ -1,5 +1,7 @@
 ﻿using Amazon.SQS;
+using Amazon.SQS.Model;
 using Bounan.AniMan.BusinessLogic.Configuration;
+using Bounan.AniMan.BusinessLogic.Extensions;
 using Bounan.AniMan.BusinessLogic.Interfaces;
 using Bounan.AniMan.BusinessLogic.Models;
 using Microsoft.Extensions.Options;
@@ -31,8 +33,15 @@ internal class NotificationService : INotificationService
 		return SqsClient.SendMessageAsync(_botTopicArn, message);
 	}
 
-	public Task NotifyDwnAsync()
+	public Task NotifyDwnAsync(int numberOfNotifications)
 	{
-		return SqsClient.SendMessageAsync(_dwnTopicArn, "0");
+		const int maxInBatch = 10;
+		var messages = Enumerable.Range(1, numberOfNotifications)
+			.Select(i => new SendMessageBatchRequestEntry(i.ToString(), "0"))
+			.Split(maxInBatch);
+
+		var tasks = messages.Select(m => SqsClient.SendMessageBatchAsync(_dwnTopicArn, m.ToList()));
+
+		return Task.WhenAll(tasks);
 	}
 }
