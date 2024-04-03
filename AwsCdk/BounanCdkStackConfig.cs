@@ -8,6 +8,8 @@ public class BounanCdkStackConfig
 
 	public required string LoanApiToken { get; init; }
 
+    public int WarmupTimeoutMinutes { get; init; } = 5;
+
 	public void Validate()
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(AlertEmail, nameof(AlertEmail));
