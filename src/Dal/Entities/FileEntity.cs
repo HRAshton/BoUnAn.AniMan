@@ -5,7 +5,7 @@ using Bounan.Common.Models;
 
 namespace Bounan.AniMan.Dal.Entities;
 
-[DynamoDBTable("Files")]
+[DynamoDBTable("DUMMY")]
 public class FileEntity : IVideoKey
 {
 	[DynamoDBHashKey]
