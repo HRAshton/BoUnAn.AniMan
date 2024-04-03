@@ -7,6 +7,10 @@
     <RootNamespace>Bounan.AniMan.Endpoint</RootNamespace>
     <AssemblyName>Bounan.AniMan.Endpoint</AssemblyName>
     <OutputType>Exe</OutputType>
+    <AWSProjectType>Lambda</AWSProjectType>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <TieredCompilation>false</TieredCompilation>
+    <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
   </PropertyGroup>
 
   <ItemGroup>
