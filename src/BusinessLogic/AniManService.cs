@@ -14,7 +14,7 @@ internal partial class AniManService : IAniManService
 	public AniManService(
 		ILogger<AniManService> logger,
 		IFilesRepository filesRepository,
-		IBotLoanApiClient botLoanApiClient,
+		ILoanApiComClient botLoanApiClient,
 		INotificationService notificationService)
 	{
 		Logger = logger;
@@ -29,7 +29,7 @@ internal partial class AniManService : IAniManService
 
 	private IFilesRepository FilesRepository { get; }
 
-	private IBotLoanApiClient BotLoanApiClient { get; }
+	private ILoanApiComClient BotLoanApiClient { get; }
 
 	private INotificationService NotificationService { get; }
 
@@ -96,26 +96,36 @@ internal partial class AniManService : IAniManService
 		var videoInfos = await BotLoanApiClient.SearchAsync(request.MyAnimeListId);
 		Log.VideoFetchedFromLoanApi(Logger, videoInfos);
 
-		var videoInfo = videoInfos.FirstOrDefault(x =>
-			x.MyAnimeListId == request.MyAnimeListId
-			&& x.Dub == request.Dub
-			&& x.Episode == request.Episode);
-		if (videoInfo == null)
+		var dubEpisodes = videoInfos
+			.Where(x => x.MyAnimeListId == request.MyAnimeListId && x.Dub == request.Dub)
+			.ToArray();
+
+		var requestedVideo = dubEpisodes.FirstOrDefault(x => x.Episode == request.Episode);
+		if (requestedVideo == null)
 		{
 			return VideoStatus.NotAvailable;
 		}
 
-		var videoKey = new VideoKey(videoInfo.MyAnimeListId, videoInfo.Dub, videoInfo.Episode);
-		var fileEntity = await FilesRepository.AddAnimeAsync(videoKey);
-		Log.VideoAddedToDatabase(Logger, fileEntity);
+		FileEntity? requestedFileEntity = null;
+		foreach (var video in dubEpisodes)
+		{
+			var fileEntity = await FilesRepository.AddAnimeAsync(video);
+			Log.VideoAddedToDatabase(Logger, fileEntity);
 
-		await FilesRepository.AttachUserToAnimeAsync(fileEntity, request.ChatId);
+			if (video.Episode == request.Episode)
+			{
+				requestedFileEntity = fileEntity;
+			}
+		}
+
+		ArgumentNullException.ThrowIfNull(requestedFileEntity);
+		await FilesRepository.AttachUserToAnimeAsync(requestedFileEntity, request.ChatId);
 		Log.ChatIdAttachedToAnime(Logger);
 
 		await NotificationService.NotifyDwnAsync();
 		Log.DwnHasBeenNotified(Logger);
 
-		return fileEntity.Status;
+		return requestedFileEntity.Status;
 	}
 
 	private async Task NotifyUsersAsync(ICollection<long>? usersToNotify, FileEntity video)
