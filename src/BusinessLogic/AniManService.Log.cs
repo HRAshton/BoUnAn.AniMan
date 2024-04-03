@@ -12,10 +12,10 @@ internal partial class AniManService
 		[LoggerMessage(0, LogLevel.Debug, "AniMan service created")]
 		public static partial void AniManServiceCreated(ILogger logger);
 
-		[LoggerMessage(1, LogLevel.Information, "Received request: {Request}")]
+		[LoggerMessage(1, LogLevel.Information, "Received request: {@request}")]
 		public static partial void ReceivedRequest(ILogger logger, BotRequest request);
 
-		[LoggerMessage(2, LogLevel.Information, "Video retrieved: {Video}")]
+		[LoggerMessage(2, LogLevel.Information, "Video retrieved: {@video}")]
 		public static partial void VideoRetrieved(ILogger logger, FileEntity? video);
 
 		[LoggerMessage(3, LogLevel.Information, "Returning video as is")]
@@ -27,16 +27,16 @@ internal partial class AniManService
 		[LoggerMessage(5, LogLevel.Information, "Adding anime")]
 		public static partial void AddingAnime(ILogger logger);
 
-		[LoggerMessage(6, LogLevel.Warning, "Marked as failed: {Video}")]
+		[LoggerMessage(6, LogLevel.Warning, "Marked as failed: {@video}")]
 		public static partial void MarkedAsFailed(ILogger logger, FileEntity video);
 
-		[LoggerMessage(7, LogLevel.Information, "Marked as downloaded: {Video}")]
+		[LoggerMessage(7, LogLevel.Information, "Marked as downloaded: {@video}")]
 		public static partial void MarkedAsDownloaded(ILogger logger, FileEntity video);
 
-		[LoggerMessage(8, LogLevel.Information, "Video fetched from Loan API: {Video}")]
+		[LoggerMessage(8, LogLevel.Information, "Video fetched from Loan API: {@video}")]
 		public static partial void VideoFetchedFromLoanApi(ILogger logger, ICollection<SearchResultItem>? video);
 
-		[LoggerMessage(9, LogLevel.Information, "Video added to database: {Video}")]
+		[LoggerMessage(9, LogLevel.Information, "Video added to database: {@video}")]
 		public static partial void VideoAddedToDatabase(ILogger logger, FileEntity video);
 
 		[LoggerMessage(10, LogLevel.Information, "Chat ID attached to anime")]
@@ -48,10 +48,10 @@ internal partial class AniManService
 		[LoggerMessage(12, LogLevel.Information, "No users to notify")]
 		public static partial void NoUsersToNotify(ILogger logger);
 
-		[LoggerMessage(13, LogLevel.Information, "Users to notify: {Users}")]
+		[LoggerMessage(13, LogLevel.Information, "Users to notify: {@users}")]
 		public static partial void UsersToNotify(ILogger logger, ICollection<long> users);
 
-		[LoggerMessage(14, LogLevel.Information, "Sending notification to Bot: {Notification}")]
+		[LoggerMessage(14, LogLevel.Information, "Sending notification to Bot: {@notification}")]
 		public static partial void SendingNotificationToBot(ILogger logger, BotNotification notification);
 	}
 }
