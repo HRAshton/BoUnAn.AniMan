@@ -12,6 +12,7 @@ using Amazon.CDK.AWS.SNS.Subscriptions;
 using Amazon.CDK.AWS.SQS;
 using Constructs;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using AssetOptions = Amazon.CDK.AWS.S3.Assets.AssetOptions;
 using Attribute = Amazon.CDK.AWS.DynamoDB.Attribute;
 using AlarmActions = Amazon.CDK.AWS.CloudWatch.Actions;
@@ -49,6 +50,7 @@ public class AniManCdkStack : Stack
 
         CreateWarmer(config, getAnimeLambda);
 
+        Out("Bounan.Downloader.Config", JsonConvert.SerializeObject(config));
         Out("Bounan.AniMan.GetAnimeLambdaArn", getAnimeLambda.FunctionArn);
         Out("Bounan.AniMan.GetVideoToDownloadLambdaName", getVideoToDownloadLambda.FunctionName);
         Out("Bounan.AniMan.UpdateVideoStatusLambdaName", updateVideoStatusLambda.FunctionName);
