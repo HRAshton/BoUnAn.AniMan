@@ -14,6 +14,7 @@ using Constructs;
 using Microsoft.Extensions.Configuration;
 using AssetOptions = Amazon.CDK.AWS.S3.Assets.AssetOptions;
 using Attribute = Amazon.CDK.AWS.DynamoDB.Attribute;
+using AlarmActions = Amazon.CDK.AWS.CloudWatch.Actions;
 using LogGroupProps = Amazon.CDK.AWS.Logs.LogGroupProps;
 using Targets = Amazon.CDK.AWS.Events.Targets;
 
@@ -125,13 +126,14 @@ public class AniManCdkStack : Stack
             MetricName = "ErrorCount"
         });
 
-        _ = new Alarm(this, "LogGroupErrorAlarm", new AlarmProps
+        var alarm = new Alarm(this, "LogGroupErrorAlarm", new AlarmProps
         {
             Metric = errorPattern.Metric(),
             Threshold = 1,
             EvaluationPeriods = 1,
             TreatMissingData = TreatMissingData.NOT_BREACHING,
         });
+        alarm.AddAlarmAction(new AlarmActions.SnsAction(topic));
     }
 
     private (Function, Function, Function) CreateLambdas(
