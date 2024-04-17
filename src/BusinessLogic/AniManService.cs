@@ -9,137 +9,139 @@ using Microsoft.Extensions.Logging;
 
 namespace Bounan.AniMan.BusinessLogic;
 
-internal partial class AniManService : IAniManService
+internal partial class AniManService(
+    ILogger<AniManService> logger,
+    IFilesRepository filesRepository,
+    ILoanApiComClient botLoanApiClient,
+    ISqsNotificationService sqsNotificationService,
+    ISnsNotificationService snsNotificationService)
+    : IAniManService
 {
-	public AniManService(
-		ILogger<AniManService> logger,
-		IFilesRepository filesRepository,
-		ILoanApiComClient botLoanApiClient,
-		INotificationService notificationService)
-	{
-		Logger = logger;
-		FilesRepository = filesRepository;
-		BotLoanApiClient = botLoanApiClient;
-		NotificationService = notificationService;
+    private ILogger<AniManService> Logger { get; } = logger;
 
-		Log.AniManServiceCreated(Logger);
-	}
+    private IFilesRepository FilesRepository { get; } = filesRepository;
 
-	private ILogger<AniManService> Logger { get; }
+    private ILoanApiComClient BotLoanApiClient { get; } = botLoanApiClient;
 
-	private IFilesRepository FilesRepository { get; }
+    private ISqsNotificationService SqsNotificationService { get; } = sqsNotificationService;
 
-	private ILoanApiComClient BotLoanApiClient { get; }
+    private ISnsNotificationService SnsNotificationService { get; } = snsNotificationService;
 
-	private INotificationService NotificationService { get; }
+    public async Task<BotResponse> GetAnimeAsync(BotRequest request)
+    {
+        Log.ReceivedRequest(Logger, request);
 
-	public async Task<BotResponse> GetAnimeAsync(BotRequest request)
-	{
-		Log.ReceivedRequest(Logger, request);
+        var key = new VideoKey(request.MyAnimeListId, request.Dub, request.Episode);
+        var video = await FilesRepository.GetAnimeAsync(key);
+        Log.VideoRetrieved(Logger, video);
 
-		var key = new VideoKey(request.MyAnimeListId, request.Dub, request.Episode);
-		var video = await FilesRepository.GetAnimeAsync(key);
-		Log.VideoRetrieved(Logger, video);
+        switch (video?.Status)
+        {
+            case VideoStatus.Downloaded or VideoStatus.Failed:
+                Log.ReturningVideoAsIs(Logger);
+                return new BotResponse(video.Status, video.FileId);
 
-		switch (video?.Status)
-		{
-			case VideoStatus.Downloaded or VideoStatus.Failed:
-				Log.ReturningVideoAsIs(Logger);
-				return new BotResponse(video.Status, video.FileId);
+            case VideoStatus.Pending or VideoStatus.Downloading:
+                Log.AttachingUserToAnime(Logger);
+                await FilesRepository.AttachUserToAnimeAsync(video, request.ChatId);
+                return new BotResponse(VideoStatus.Pending, null);
 
-			case VideoStatus.Pending or VideoStatus.Downloading:
-				Log.AttachingUserToAnime(Logger);
-				await FilesRepository.AttachUserToAnimeAsync(video, request.ChatId);
-				return new BotResponse(VideoStatus.Pending, null);
+            case null:
+                Log.AddingAnime(Logger);
+                var status = await AddAnimeAsync(request);
+                return new BotResponse(status, null);
 
-			case null:
-				Log.AddingAnime(Logger);
-				var status = await AddAnimeAsync(request);
-				return new BotResponse(status, null);
+            default:
+                throw new InvalidOperationException();
+        }
+    }
 
-			default:
-				throw new InvalidOperationException();
-		}
-	}
+    public async Task<DwnQueueResponse> GetVideoToDownloadAsync()
+    {
+        var file = await FilesRepository.PopSignedLinkToDownloadAsync();
+        return new DwnQueueResponse(file);
+    }
 
-	public async Task<DwnQueueResponse> GetVideoToDownloadAsync()
-	{
-		var file = await FilesRepository.PopSignedLinkToDownloadAsync();
-		return new DwnQueueResponse(file);
-	}
+    public async Task UpdateVideoStatusAsync(DwnResultNotification notification)
+    {
+        var key = new VideoKey(notification.MyAnimeListId, notification.Dub, notification.Episode);
+        var video = await FilesRepository.GetAnimeAsync(key);
+        ArgumentNullException.ThrowIfNull(video);
+        Log.VideoRetrieved(Logger, video);
 
-	public async Task UpdateVideoStatusAsync(DwnResultNotification notification)
-	{
-		var key = new VideoKey(notification.MyAnimeListId, notification.Dub, notification.Episode);
-		var video = await FilesRepository.GetAnimeAsync(key);
-		ArgumentNullException.ThrowIfNull(video);
-		Log.VideoRetrieved(Logger, video);
+        if (notification.FileId is null)
+        {
+            await FilesRepository.MarkAsFailedAsync(video);
+            Log.MarkedAsFailed(Logger, video);
+        }
+        else
+        {
+            await FilesRepository.MarkAsDownloadedAsync(video, notification.FileId);
+            Log.MarkedAsDownloaded(Logger, video);
+        }
 
-		if (notification.FileId is null)
-		{
-			await FilesRepository.MarkAsFailedAsync(video);
-			Log.MarkedAsFailed(Logger, video);
-		}
-		else
-		{
-			await FilesRepository.MarkAsDownloadedAsync(video, notification.FileId);
-			Log.MarkedAsDownloaded(Logger, video);
-		}
+        var usersToNotify = video.Subscribers;
+        await NotifyUsersAsync(video, usersToNotify, notification.FileId);
+    }
 
-		var usersToNotify = video.Subscribers;
-		await NotifyUsersAsync(video, usersToNotify, notification.FileId);
-	}
+    private async Task<VideoStatus> AddAnimeAsync(IBotRequest request)
+    {
+        var videoInfos = await BotLoanApiClient.SearchAsync(request.MyAnimeListId);
+        Log.VideoFetchedFromLoanApi(Logger, videoInfos);
 
-	private async Task<VideoStatus> AddAnimeAsync(BotRequest request)
-	{
-		var videoInfos = await BotLoanApiClient.SearchAsync(request.MyAnimeListId);
-		Log.VideoFetchedFromLoanApi(Logger, videoInfos);
+        var dubEpisodes = videoInfos
+            .Where(x => x.MyAnimeListId == request.MyAnimeListId && x.Dub == request.Dub)
+            .ToArray();
 
-		var dubEpisodes = videoInfos
-			.Where(x => x.MyAnimeListId == request.MyAnimeListId && x.Dub == request.Dub)
-			.ToArray();
+        var requestedVideo = dubEpisodes.FirstOrDefault(x => x.Episode == request.Episode);
+        if (requestedVideo == null)
+        {
+            return VideoStatus.NotAvailable;
+        }
 
-		var requestedVideo = dubEpisodes.FirstOrDefault(x => x.Episode == request.Episode);
-		if (requestedVideo == null)
-		{
-			return VideoStatus.NotAvailable;
-		}
+        FileEntity? requestedFileEntity = null;
+        var atLeastOneAdded = false;
+        foreach (var video in dubEpisodes)
+        {
+            var (added, fileEntity) = await FilesRepository.AddAnimeAsync(video);
+            atLeastOneAdded |= added;
+            if (added)
+            {
+                Log.VideoAddedToDatabase(Logger, fileEntity);
+            }
 
-		FileEntity? requestedFileEntity = null;
-		foreach (var video in dubEpisodes)
-		{
-			var fileEntity = await FilesRepository.AddAnimeAsync(video);
-			Log.VideoAddedToDatabase(Logger, fileEntity);
+            if (video.Episode == request.Episode)
+            {
+                requestedFileEntity = fileEntity;
+            }
+        }
 
-			if (video.Episode == request.Episode)
-			{
-				requestedFileEntity = fileEntity;
-			}
-		}
+        ArgumentNullException.ThrowIfNull(requestedFileEntity);
+        await FilesRepository.AttachUserToAnimeAsync(requestedFileEntity, request.ChatId);
+        Log.ChatIdAttachedToAnime(Logger);
 
-		ArgumentNullException.ThrowIfNull(requestedFileEntity);
-		await FilesRepository.AttachUserToAnimeAsync(requestedFileEntity, request.ChatId);
-		Log.ChatIdAttachedToAnime(Logger);
+        if (atLeastOneAdded)
+        {
+            await SnsNotificationService.NotifyNewEpisodeAsync();
+            Log.DwnHasBeenNotified(Logger);
+        }
 
-		await NotificationService.NotifyDwnAsync(dubEpisodes.Length);
-		Log.DwnHasBeenNotified(Logger);
+        return requestedFileEntity.Status;
+    }
 
-		return requestedFileEntity.Status;
-	}
+    private async Task NotifyUsersAsync(IVideoKey videoKey, ICollection<long>? usersToNotify, string? fileId)
+    {
+        if (usersToNotify is null || usersToNotify.Count == 0)
+        {
+            Log.NoUsersToNotify(Logger);
+            return;
+        }
 
-	private async Task NotifyUsersAsync(IVideoKey videoKey, ICollection<long>? usersToNotify, string? fileId)
-	{
-		if (usersToNotify is null || usersToNotify.Count == 0)
-		{
-			Log.NoUsersToNotify(Logger);
-			return;
-		}
+        Log.UsersToNotify(Logger, usersToNotify);
+        var botNotification =
+            new BotNotification(usersToNotify, videoKey.MyAnimeListId, videoKey.Dub, videoKey.Episode, fileId);
 
-		Log.UsersToNotify(Logger, usersToNotify);
-		var botNotification =
-			new BotNotification(usersToNotify, videoKey.MyAnimeListId, videoKey.Dub, videoKey.Episode, fileId);
-
-		Log.SendingNotificationToBot(Logger, botNotification);
-		await NotificationService.NotifyBotAsync(botNotification);
-	}
+        Log.SendingNotificationToBot(Logger, botNotification);
+        await SqsNotificationService.NotifyBotAsync(botNotification);
+    }
 }

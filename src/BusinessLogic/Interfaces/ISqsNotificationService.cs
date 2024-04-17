@@ -2,9 +2,7 @@
 
 namespace Bounan.AniMan.BusinessLogic.Interfaces;
 
-internal interface INotificationService
+internal interface ISqsNotificationService
 {
 	Task NotifyBotAsync(BotNotification notification);
-
-	Task NotifyDwnAsync(int numberOfNotifications);
 }

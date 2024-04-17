@@ -2,7 +2,7 @@
 
 internal record BotConfig
 {
-	public const string SectionName = "Bot";
+    public const string SectionName = "Bot";
 
-	public required string NotificationQueueUrl { get; init; }
+    public required string NotificationQueueUrl { get; init; }
 }

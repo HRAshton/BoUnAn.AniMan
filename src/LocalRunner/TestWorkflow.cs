@@ -12,10 +12,8 @@ DwnResultNotification notification;
 
 if (true)
 {
-	videoToDownload = await lambdaHandlers.GetVideoToDownloadAsync(context);
-	Console.WriteLine(JsonConvert.SerializeObject(videoToDownload));
-	Assert(videoToDownload.VideoKey is not null, "Get the video to download");
-	return;
+    await lambdaHandlers.GetAnimeAsync(new BotRequest(431, "Гланц & Королева", 0, 2000000000000003), context);
+    return;
 }
 
 // 1. Request anime that does not exist
@@ -85,8 +83,8 @@ await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultNotification(37786, "An
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(37786, "AniDUB", 1, 2000000000000003), context);
 Console.WriteLine(response);
 Assert(
-	response.Status == VideoStatus.Failed,
-	"10. Response from the downloader that the video failed to download, but with no attached users");
+    response.Status == VideoStatus.Failed,
+    "10. Response from the downloader that the video failed to download, but with no attached users");
 
 // 11. Request anime that exists but the episode does not exist
 // Should return NotAvailable
@@ -98,8 +96,8 @@ return;
 
 static void Assert(bool condition, string message = "")
 {
-	if (!condition)
-	{
-		throw new Exception(message);
-	}
+    if (!condition)
+    {
+        throw new Exception(message);
+    }
 }

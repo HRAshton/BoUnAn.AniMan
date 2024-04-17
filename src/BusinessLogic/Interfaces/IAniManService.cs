@@ -4,9 +4,9 @@ namespace Bounan.AniMan.BusinessLogic.Interfaces;
 
 public interface IAniManService
 {
-	Task<BotResponse> GetAnimeAsync(BotRequest request);
+    Task<BotResponse> GetAnimeAsync(BotRequest request);
 
-	Task<DwnQueueResponse> GetVideoToDownloadAsync();
+    Task<DwnQueueResponse> GetVideoToDownloadAsync();
 
-	Task UpdateVideoStatusAsync(DwnResultNotification notification);
+    Task UpdateVideoStatusAsync(DwnResultNotification notification);
 }

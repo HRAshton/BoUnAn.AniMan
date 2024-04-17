@@ -4,13 +4,14 @@
     "LocalRunner": {
       "commandName": "Project",
       "environmentVariables": {
-        "AWS_REGION": "eu-north-1",
+        "AWS_REGION": "eu-central-1",
         "AWS_PROFILE": "hra",
         "LoanApi__Token": "",
         "Storage__TableName": "",
         "Storage__SecondaryIndexName": "",
+        "NewEpisodeNotification__TopicArn": "",
         "Bot__NotificationQueueUrl": "",
-        "Dwn__NotificationQueueUrl": ""
+        "DUMMY": ""
       }
     }
   }

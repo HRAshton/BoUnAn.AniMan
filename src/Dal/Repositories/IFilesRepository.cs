@@ -5,15 +5,15 @@ namespace Bounan.AniMan.Dal.Repositories;
 
 public interface IFilesRepository
 {
-	Task<FileEntity?> GetAnimeAsync(IVideoKey videoKey);
+    Task<FileEntity?> GetAnimeAsync(IVideoKey videoKey);
 
-	Task<FileEntity> AddAnimeAsync(IVideoKey videoKey);
+    Task<(bool Added, FileEntity Entity)> AddAnimeAsync(IVideoKey videoKey);
 
-	Task MarkAsDownloadedAsync(IVideoKey videoKey, string fileId);
+    Task MarkAsDownloadedAsync(IVideoKey videoKey, string fileId);
 
-	Task MarkAsFailedAsync(IVideoKey videoKey);
+    Task MarkAsFailedAsync(IVideoKey videoKey);
 
-	Task AttachUserToAnimeAsync(IVideoKey videoKey, long requestChatId);
+    Task AttachUserToAnimeAsync(IVideoKey videoKey, long requestChatId);
 
-	Task<IVideoKey?> PopSignedLinkToDownloadAsync();
+    Task<IVideoKey?> PopSignedLinkToDownloadAsync();
 }

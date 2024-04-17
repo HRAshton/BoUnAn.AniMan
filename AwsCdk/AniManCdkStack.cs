@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Amazon.CDK;
 using Amazon.CDK.AWS.CloudWatch;
@@ -21,6 +22,7 @@ using Targets = Amazon.CDK.AWS.Events.Targets;
 
 namespace Bounan.AniMan.AwsCdk;
 
+[SuppressMessage("Performance", "CA1859: Use concrete types when possible for improved performance")]
 public class AniManCdkStack : Stack
 {
     internal AniManCdkStack(Construct scope, string id, IStackProps? props = null) : base(scope, id, props)
@@ -35,7 +37,7 @@ public class AniManCdkStack : Stack
 
         var (table, index) = CreateFilesTable();
         var botNotificationsQueue = CreateBotNotificationsQueue();
-        var dwnNotificationsQueue = CreateDwnNotificationsQueue();
+        var newEpisodeTopic = CreateNewEpisodeTopic();
 
         var logGroup = CreateLogGroup();
         SetErrorAlarm(config, logGroup);
@@ -45,7 +47,7 @@ public class AniManCdkStack : Stack
             table,
             index.IndexName,
             botNotificationsQueue,
-            dwnNotificationsQueue,
+            newEpisodeTopic,
             logGroup);
 
         CreateWarmer(config, getAnimeLambda);
@@ -56,12 +58,11 @@ public class AniManCdkStack : Stack
         Out("Bounan.AniMan.UpdateVideoStatusLambdaName", updateVideoStatusLambda.FunctionName);
         Out("Bounan.AniMan.BotNotificationsQueueUrl", botNotificationsQueue.QueueUrl);
         Out("Bounan.AniMan.BotNotificationsQueueArn", botNotificationsQueue.QueueArn);
-        Out("Bounan.AniMan.DwnNotificationsQueueUrl", dwnNotificationsQueue.QueueUrl);
-        Out("Bounan.AniMan.DwnNotificationsQueueArn", dwnNotificationsQueue.QueueArn);
+        Out("Bounan.AniMan.NewEpisodeTopicArn", newEpisodeTopic.TopicArn);
         Out("Bounan.AniMan.FilesTableName", table.TableName);
     }
 
-    private (Table, GlobalSecondaryIndexProps) CreateFilesTable()
+    private (ITable, IGlobalSecondaryIndexProps) CreateFilesTable()
     {
         var filesTable = new Table(this, "FilesTable", new TableProps
         {
@@ -93,20 +94,17 @@ public class AniManCdkStack : Stack
         return (filesTable, globalSecondaryIndexProps);
     }
 
-    private Queue CreateBotNotificationsQueue()
+    private IQueue CreateBotNotificationsQueue()
     {
         return new Queue(this, "BotNotificationsSqsQueue");
     }
 
-    private Queue CreateDwnNotificationsQueue()
+    private ITopic CreateNewEpisodeTopic()
     {
-        return new Queue(this, "DwnNotificationsSqsQueue", new QueueProps
-        {
-            RetentionPeriod = Duration.Minutes(1)
-        });
+        return new Topic(this, "NewEpisodeSnsTopic");
     }
 
-    private LogGroup CreateLogGroup()
+    private ILogGroup CreateLogGroup()
     {
         return new LogGroup(this, "LogGroup", new LogGroupProps
         {
@@ -138,12 +136,12 @@ public class AniManCdkStack : Stack
         alarm.AddAlarmAction(new AlarmActions.SnsAction(topic));
     }
 
-    private (Function, Function, Function) CreateLambdas(
+    private (IFunction, IFunction, IFunction) CreateLambdas(
         BounanCdkStackConfig bounanCdkStackConfig,
-        Table filesTable,
+        ITable filesTable,
         string secondaryIndexName,
-        Queue botNotificationsQueue,
-        Queue dwnNotificationsQueue,
+        IQueue botNotificationsQueue,
+        ITopic newEpisodeTopic,
         ILogGroup logGroup)
     {
         string[] methods = ["GetAnime", "GetVideoToDownload", "UpdateVideoStatus"];
@@ -179,8 +177,8 @@ public class AniManCdkStack : Stack
                     { "LoanApi__Token", bounanCdkStackConfig.LoanApiToken },
                     { "Storage__TableName", filesTable.TableName },
                     { "Storage__SecondaryIndexName", secondaryIndexName },
+                    { "NewEpisodeNotification__TopicArn", newEpisodeTopic.TopicArn },
                     { "Bot__NotificationQueueUrl", botNotificationsQueue.QueueUrl },
-                    { "Dwn__NotificationQueueUrl", dwnNotificationsQueue.QueueUrl }
                 }
             }))
             .ToArray();
@@ -188,9 +186,11 @@ public class AniManCdkStack : Stack
         foreach (var function in functions)
         {
             filesTable.GrantReadWriteData(function);
-            botNotificationsQueue.GrantSendMessages(function);
-            dwnNotificationsQueue.GrantSendMessages(function);
         }
+
+        var getAnimeLambda = functions[0];
+        botNotificationsQueue.GrantSendMessages(getAnimeLambda);
+        newEpisodeTopic.GrantPublish(getAnimeLambda);
 
         return (functions[0], functions[1], functions[2]);
     }
