@@ -192,6 +192,9 @@ public class AniManCdkStack : Stack
         botNotificationsQueue.GrantSendMessages(getAnimeLambda);
         newEpisodeTopic.GrantPublish(getAnimeLambda);
 
+        var updateVideoStatusLambda = functions[2];
+        botNotificationsQueue.GrantSendMessages(updateVideoStatusLambda);
+
         return (functions[0], functions[1], functions[2]);
     }
 
