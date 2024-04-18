@@ -86,7 +86,7 @@ internal partial class AniManService(
 
     private async Task<VideoStatus> AddAnimeAsync(IBotRequest request)
     {
-        var videoInfos = await BotLoanApiClient.SearchAsync(request.MyAnimeListId);
+        var videoInfos = await BotLoanApiClient.GetExistingVideos(request.MyAnimeListId);
         Log.VideoFetchedFromLoanApi(Logger, videoInfos);
 
         var dubEpisodes = videoInfos

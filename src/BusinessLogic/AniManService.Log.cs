@@ -31,7 +31,7 @@ internal partial class AniManService
         public static partial void MarkedAsDownloaded(ILogger logger, FileEntity video);
 
         [LoggerMessage(8, LogLevel.Information, "Video fetched from Loan API: {@video}")]
-        public static partial void VideoFetchedFromLoanApi(ILogger logger, ICollection<SearchResultItem>? video);
+        public static partial void VideoFetchedFromLoanApi(ILogger logger, ICollection<IVideoKeyWithLink>? video);
 
         [LoggerMessage(9, LogLevel.Information, "Video added to database: {@video}")]
         public static partial void VideoAddedToDatabase(ILogger logger, FileEntity video);
