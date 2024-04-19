@@ -6,5 +6,5 @@ namespace Bounan.AniMan.BusinessLogic.Models;
 /// Uses for requests from the Downloader to the AniMan.
 /// Describes the result of the download.
 /// </summary>
-public record DwnResultNotification(int MyAnimeListId, string Dub, int Episode, string? FileId)
+public record DwnResultNotification(int MyAnimeListId, string Dub, int Episode, string? MessageId)
     : IDwnResultNotification;
