@@ -48,5 +48,5 @@ public class FileEntity : IVideoKey
 	public HashSet<long>? Subscribers { get; set; }
 
 	[DynamoDBProperty]
-	public string? MessageId { get; set; }
+	public string? FileId { get; set; }
 }

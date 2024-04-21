@@ -5,6 +5,6 @@ namespace Bounan.AniMan.BusinessLogic.Models;
 
 /// <summary>
 /// Response from the AniMan to the Bot.
-/// Describes the message containing the video.
+/// Describes the video to return to the user.
 /// </summary>
-public record BotResponse(VideoStatus Status, string? MessageId) : IBotResponse;
+public record BotResponse(VideoStatus Status, string? FileId) : IBotResponse;

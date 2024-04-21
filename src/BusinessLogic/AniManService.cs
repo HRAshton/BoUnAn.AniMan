@@ -39,7 +39,7 @@ internal partial class AniManService(
         {
             case VideoStatus.Downloaded or VideoStatus.Failed:
                 Log.ReturningVideoAsIs(Logger);
-                return new BotResponse(video.Status, video.MessageId);
+                return new BotResponse(video.Status, video.FileId);
 
             case VideoStatus.Pending or VideoStatus.Downloading:
                 Log.AttachingUserToAnime(Logger);
@@ -69,19 +69,19 @@ internal partial class AniManService(
         ArgumentNullException.ThrowIfNull(video);
         Log.VideoRetrieved(Logger, video);
 
-        if (notification.MessageId is null)
+        if (notification.FileId is null)
         {
             await FilesRepository.MarkAsFailedAsync(video);
             Log.MarkedAsFailed(Logger, video);
         }
         else
         {
-            await FilesRepository.MarkAsDownloadedAsync(video, notification.MessageId);
+            await FilesRepository.MarkAsDownloadedAsync(video, notification.FileId);
             Log.MarkedAsDownloaded(Logger, video);
         }
 
         var usersToNotify = video.Subscribers;
-        await NotifyUsersAsync(video, usersToNotify, notification.MessageId);
+        await NotifyUsersAsync(video, usersToNotify, notification.FileId);
     }
 
     private async Task<VideoStatus> AddAnimeAsync(IBotRequest request)
@@ -129,7 +129,7 @@ internal partial class AniManService(
         return requestedFileEntity.Status;
     }
 
-    private async Task NotifyUsersAsync(IVideoKey videoKey, ICollection<long>? usersToNotify, string? messageId)
+    private async Task NotifyUsersAsync(IVideoKey videoKey, ICollection<long>? usersToNotify, string? fileId)
     {
         if (usersToNotify is null || usersToNotify.Count == 0)
         {
@@ -139,7 +139,7 @@ internal partial class AniManService(
 
         Log.UsersToNotify(Logger, usersToNotify);
         var botNotification =
-            new BotNotification(usersToNotify, videoKey.MyAnimeListId, videoKey.Dub, videoKey.Episode, messageId);
+            new BotNotification(usersToNotify, videoKey.MyAnimeListId, videoKey.Dub, videoKey.Episode, fileId);
 
         Log.SendingNotificationToBot(Logger, botNotification);
         await SqsNotificationService.NotifyBotAsync(botNotification);

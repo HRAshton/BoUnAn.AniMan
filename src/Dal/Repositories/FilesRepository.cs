@@ -49,12 +49,12 @@ internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<Storag
         return (true, fileEntity);
     }
 
-    public async Task MarkAsDownloadedAsync(IVideoKey videoKey, string messageId)
+    public async Task MarkAsDownloadedAsync(IVideoKey videoKey, string fileId)
     {
         var video = await Context.LoadAsync<FileEntity>(videoKey.ToKey(), _dynamoDbOperationConfig);
 
         video.Status = VideoStatus.Downloaded;
-        video.MessageId = messageId;
+        video.FileId = fileId;
         video.UpdatedAt = DateTime.UtcNow;
         video.Subscribers = null;
 

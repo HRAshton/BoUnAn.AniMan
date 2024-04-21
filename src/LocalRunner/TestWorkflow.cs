@@ -48,7 +48,7 @@ Assert(videoToDownload.VideoKey is not null, "5. Get the video to download");
 
 // 6. Response from the downloader that the video is downloaded
 // Should update the status to Downloaded, attach the fileId, and notify the Bot
-notification = new DwnResultNotification(10686, "AniDUB", 0, "MessageId");
+notification = new DwnResultNotification(10686, "AniDUB", 0, "FileId");
 await lambdaHandlers.UpdateVideoStatusAsync(notification, context);
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(10686, "AniDUB", 0, 2000000000000003), context);
 Console.WriteLine(response);
@@ -58,7 +58,7 @@ Assert(response.Status == VideoStatus.Downloaded, "6. Response from the download
 // Should return Downloaded with fileId
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(10686, "AniDUB", 0, 2000000000000002), context);
 Console.WriteLine(response);
-Assert(response is { Status: VideoStatus.Downloaded, MessageId: "MessageId" }, "7. Request anime that exists");
+Assert(response is { Status: VideoStatus.Downloaded, FileId: "FileId" }, "7. Request anime that exists");
 
 // 8. Response from the downloader that the video failed to download
 // Should update the status to Failed and notify the Bot
@@ -78,7 +78,7 @@ Assert(response.Status == VideoStatus.Failed, "9. Request anime that exists and 
 // 10. Response from the downloader that the video failed to download, but with no attached users
 // Should update the status to Failed and should not notify the Bot
 await lambdaHandlers.GetAnimeAsync(new BotRequest(1, "AniDUB", 1, 2000000000000003), context);
-await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultNotification(37786, "AniDUB", 1, "MessageId"), context);
+await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultNotification(37786, "AniDUB", 1, "FileId"), context);
 await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultNotification(37786, "AniDUB", 1, null), context);
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(37786, "AniDUB", 1, 2000000000000003), context);
 Console.WriteLine(response);
