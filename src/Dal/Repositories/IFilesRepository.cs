@@ -9,7 +9,7 @@ public interface IFilesRepository
 
     Task<(bool Added, FileEntity Entity)> AddAnimeAsync(IVideoKey videoKey);
 
-    Task MarkAsDownloadedAsync(IVideoKey videoKey, string fileId);
+    Task MarkAsDownloadedAsync(IVideoKey videoKey, int messageId);
 
     Task MarkAsFailedAsync(IVideoKey videoKey);
 
