@@ -11,7 +11,9 @@ public static class Registrar
 {
     public static void RegisterServices(IServiceCollection services)
     {
-        services.AddSingleton<IAniManService, AniManService>();
+        services.AddSingleton<IBotHandlingService, BotHandlingService>();
+        services.AddSingleton<IDwnHandlingService, DwnHandlingService>();
+
         services.AddSingleton<ISqsNotificationService, SqsNotificationService>();
         services.AddSingleton<ISnsNotificationService, SnsNotificationService>();
 

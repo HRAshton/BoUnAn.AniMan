@@ -4,6 +4,11 @@ using Bounan.AniMan.Endpoint;
 using Bounan.Common.Enums;
 using Newtonsoft.Json;
 
+/*
+    DELETE FROM "Bounan-AniMan-FilesTable1399FAA4-XKCVQCQHYGS6"
+    WHERE PrimaryKey = '10686#AniDUB#0'
+ */
+
 var lambdaHandlers = new LambdaHandlers();
 var context = new TestLambdaContext();
 BotResponse response;
