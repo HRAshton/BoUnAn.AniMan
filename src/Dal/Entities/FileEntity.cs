@@ -51,9 +51,5 @@ public class FileEntity : IVideoKey
     public int? MessageId { get; set; }
 
     [DynamoDBProperty]
-    [Obsolete("Use MessageId instead.")]
-    public string? FileId { get; set; }
-
-    [DynamoDBProperty]
     public Scenes? Scenes { get; set; }
 }
