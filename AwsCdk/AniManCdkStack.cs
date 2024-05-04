@@ -35,7 +35,7 @@ public class AniManCdkStack : Stack
         ArgumentNullException.ThrowIfNull(config, nameof(config));
         config.Validate();
 
-        var (table, index) = CreateFilesTable();
+        var (table, dwnSecondaryIndex, matcherSecondaryIndex) = CreateFilesTable();
         var botNotificationsQueue = CreateBotNotificationsQueue();
         var newEpisodeTopic = CreateNewEpisodeTopic();
 
@@ -45,7 +45,8 @@ public class AniManCdkStack : Stack
         var (getAnimeLambda, getVideoToDownloadLambda, updateVideoStatusLambda) = CreateLambdas(
             config,
             table,
-            index.IndexName,
+            dwnSecondaryIndex.IndexName,
+            matcherSecondaryIndex.IndexName,
             botNotificationsQueue,
             newEpisodeTopic,
             logGroup);
@@ -62,7 +63,7 @@ public class AniManCdkStack : Stack
         Out("Bounan.AniMan.FilesTableName", table.TableName);
     }
 
-    private (ITable, IGlobalSecondaryIndexProps) CreateFilesTable()
+    private (ITable, IGlobalSecondaryIndexProps, IGlobalSecondaryIndexProps) CreateFilesTable()
     {
         var filesTable = new Table(this, "FilesTable", new TableProps
         {
@@ -74,7 +75,7 @@ public class AniManCdkStack : Stack
             RemovalPolicy = RemovalPolicy.RETAIN,
         });
 
-        var globalSecondaryIndexProps = new GlobalSecondaryIndexProps
+        var dwnSecondaryIndex = new GlobalSecondaryIndexProps
         {
             IndexName = "Status-SortKey-index",
             PartitionKey = new Attribute
@@ -89,9 +90,27 @@ public class AniManCdkStack : Stack
             }
         };
 
-        filesTable.AddGlobalSecondaryIndex(globalSecondaryIndexProps);
+        var matcherSecondaryIndex = new GlobalSecondaryIndexProps
+        {
+            IndexName = "Matcher-CreatedAt-index",
+            PartitionKey = new Attribute
+            {
+                Name = "MatchingGroup",
+                Type = AttributeType.STRING,
+            },
+            SortKey = new Attribute
+            {
+                Name = "CreatedAt",
+                Type = AttributeType.STRING,
+            },
+            ProjectionType = ProjectionType.INCLUDE,
+            NonKeyAttributes = [ "MyAnimeListId", "Dub", "Episode" ],
+        };
 
-        return (filesTable, globalSecondaryIndexProps);
+        filesTable.AddGlobalSecondaryIndex(dwnSecondaryIndex);
+        filesTable.AddGlobalSecondaryIndex(matcherSecondaryIndex);
+
+        return (filesTable, dwnSecondaryIndex, matcherSecondaryIndex);
     }
 
     private IQueue CreateBotNotificationsQueue()
@@ -139,12 +158,13 @@ public class AniManCdkStack : Stack
     private (IFunction, IFunction, IFunction) CreateLambdas(
         BounanCdkStackConfig bounanCdkStackConfig,
         ITable filesTable,
-        string secondaryIndexName,
+        string dwnSecondaryIndexName,
+        string matcherSecondaryIndexName,
         IQueue botNotificationsQueue,
         ITopic newEpisodeTopic,
         ILogGroup logGroup)
     {
-        string[] methods = ["GetAnime", "GetVideoToDownload", "UpdateVideoStatus"];
+        string[] methods = [ "GetAnime", "GetVideoToDownload", "UpdateVideoStatus", "UpdateVideoScenes" ];
 
         var asset = Code.FromAsset("src", new AssetOptions
         {
@@ -176,7 +196,8 @@ public class AniManCdkStack : Stack
                 {
                     { "LoanApi__Token", bounanCdkStackConfig.LoanApiToken },
                     { "Storage__TableName", filesTable.TableName },
-                    { "Storage__SecondaryIndexName", secondaryIndexName },
+                    { "Storage__SecondaryIndexName", dwnSecondaryIndexName },
+                    { "Storage__MatcherSecondaryIndexName", matcherSecondaryIndexName },
                     { "NewEpisodeNotification__TopicArn", newEpisodeTopic.TopicArn },
                     { "Bot__NotificationQueueUrl", botNotificationsQueue.QueueUrl },
                 }

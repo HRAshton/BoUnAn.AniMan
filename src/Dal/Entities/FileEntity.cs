@@ -16,12 +16,26 @@ public class FileEntity : IVideoKey
         private init { }
     }
 
+    /// <summary>
+    /// Used for a secondary index for Downloader.
+    /// </summary>
     [DynamoDBProperty]
     public string? SortKey
     {
         get => Status == VideoStatus.Pending
             ? $"{(Subscribers is null ? 1 : 0)}#{CreatedAt:O}"
             : null;
+        // ReSharper disable once ValueParameterNotUsed - Required by DynamoDB
+        private init { }
+    }
+
+    /// <summary>
+    /// Used for a secondary index for Matcher.
+    /// </summary>
+    [DynamoDBProperty]
+    public string? MatchingGroup
+    {
+        get => Scenes is null ? $"{MyAnimeListId}#{Dub}" : null;
         // ReSharper disable once ValueParameterNotUsed - Required by DynamoDB
         private init { }
     }

@@ -17,5 +17,7 @@ public interface IFilesRepository
 
     Task<IVideoKey?> PopSignedLinkToDownloadAsync();
 
+    Task<ICollection<IVideoKey>> GetVideosToMatchAsync();
+
     Task UpdateScenesAsync(IVideoKey videoKey, Scenes scenes);
 }

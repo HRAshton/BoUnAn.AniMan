@@ -9,6 +9,7 @@
         "LoanApi__Token": "",
         "Storage__TableName": "",
         "Storage__SecondaryIndexName": "",
+        "Storage__MatcherSecondaryIndexName": "",
         "NewEpisodeNotification__TopicArn": "",
         "Bot__NotificationQueueUrl": "",
         "DUMMY": ""

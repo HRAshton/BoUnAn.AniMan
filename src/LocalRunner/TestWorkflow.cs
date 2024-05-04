@@ -2,6 +2,7 @@
 using Bounan.AniMan.BusinessLogic.Models;
 using Bounan.AniMan.Endpoint;
 using Bounan.Common.Enums;
+using Bounan.Common.Models;
 using Newtonsoft.Json;
 
 /*
@@ -17,8 +18,23 @@ DwnResultNotification notification;
 
 if (false)
 {
-    await lambdaHandlers.GetAnimeAsync(new BotRequest(431, "Гланц & Королева", 0, 2000000000000003), context);
-    return;
+    await lambdaHandlers.UpdateVideoScenesAsync(
+        new VideoScenesResponse(
+            new VideoKey(10686, "AniDUB", 0),
+            new Scenes
+            {
+                Opening = new Interval<float>
+                {
+                    Start = 0f,
+                    End = 1f
+                },
+                Ending = new Interval<float>
+                {
+                    Start = 0f,
+                    End = 1f
+                },
+            }),
+        context);
 }
 
 // 1. Request anime that does not exist
@@ -96,6 +112,35 @@ Assert(
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(10686, "AniDUB", 1, 2000000000000003), context);
 Console.WriteLine(JsonConvert.SerializeObject(response));
 Assert(response.Status == VideoStatus.NotAvailable, "11. Request anime that exists but the episode does not exist");
+
+// 12. Get anime as Matcher
+// Should return the anime to match
+var matcherResponse = await lambdaHandlers.GetSeriesToMatchAsync(context);
+Console.WriteLine(JsonConvert.SerializeObject(matcherResponse));
+Assert(matcherResponse.VideosToMatch.Count > 0, "12. Get anime as Matcher");
+
+// 13. Response from the matcher that the video is matched
+// Attach the scenes to the video
+await lambdaHandlers.UpdateVideoScenesAsync(
+    new VideoScenesResponse(
+        new VideoKey(10686, "AniDUB", 0),
+        new Scenes
+        {
+            Opening = new Interval<float>
+            {
+                Start = 0f,
+                End = 1f
+            },
+            Ending = new Interval<float>
+            {
+                Start = 0f,
+                End = 1f
+            },
+        }),
+    context);
+response = await lambdaHandlers.GetAnimeAsync(new BotRequest(10686, "AniDUB", 0, 2000000000000003), context);
+Console.WriteLine(response);
+// TODO: Assert scenes
 
 return;
 

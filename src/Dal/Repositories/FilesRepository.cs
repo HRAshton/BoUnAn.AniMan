@@ -16,8 +16,9 @@ internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<Storag
     private readonly DynamoDBOperationConfig _dynamoDbOperationConfig = new ()
     {
         OverrideTableName = databaseConfig.Value.TableName,
-        IndexName = databaseConfig.Value.SecondaryIndexName
     };
+
+    private StorageConfig StorageConfig { get; } = databaseConfig.Value;
 
     private IDynamoDBContext Context { get; } = dynamoDbContext;
 
@@ -89,7 +90,7 @@ internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<Storag
     {
         var request = new QueryOperationConfig
         {
-            IndexName = _dynamoDbOperationConfig.IndexName,
+            IndexName = StorageConfig.SecondaryIndexName,
             Filter = new QueryFilter(
                 "Status",
                 QueryOperator.Equal,
@@ -106,13 +107,56 @@ internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<Storag
             return null;
         }
 
-        var video = response.First();
+        var key = response.First().PrimaryKey;
+
+        var video = await Context.LoadAsync<FileEntity>(key, _dynamoDbOperationConfig);
         video.Status = VideoStatus.Downloading;
         video.UpdatedAt = DateTime.UtcNow;
 
         await Context.SaveAsync(video, _dynamoDbOperationConfig);
 
         return video;
+    }
+
+    /// <summary>
+    /// Returns all videos for next non-empty MatchingGroup.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<ICollection<IVideoKey>> GetVideosToMatchAsync()
+    {
+        var firstGroupQueryConfig = new ScanOperationConfig
+        {
+            IndexName = StorageConfig.MatcherSecondaryIndexName,
+            Limit = 1,
+            Select = SelectValues.AllProjectedAttributes,
+        };
+
+        var firstGroup = await Context
+            .FromScanAsync<FileEntity>(firstGroupQueryConfig, _dynamoDbOperationConfig)
+            .GetNextSetAsync();
+        if (firstGroup.Count == 0)
+        {
+            return Array.Empty<FileEntity>();
+        }
+
+        var group = firstGroup.Single().MatchingGroup;
+
+        var videosQueryConfig = new QueryOperationConfig
+        {
+            IndexName = StorageConfig.MatcherSecondaryIndexName,
+            Filter = new QueryFilter(
+                "MatchingGroup",
+                QueryOperator.Equal,
+                [ new AttributeValue { S = group } ]
+            ),
+            Select = SelectValues.AllProjectedAttributes,
+        };
+
+        var videos = await Context
+            .FromQueryAsync<FileEntity>(videosQueryConfig, _dynamoDbOperationConfig)
+            .GetRemainingAsync();
+
+        return videos.Cast<IVideoKey>().ToList();
     }
 
     public async Task UpdateScenesAsync(IVideoKey videoKey, Scenes scenes)

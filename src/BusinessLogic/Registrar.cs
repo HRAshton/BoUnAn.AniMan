@@ -13,6 +13,7 @@ public static class Registrar
     {
         services.AddSingleton<IBotHandlingService, BotHandlingService>();
         services.AddSingleton<IDwnHandlingService, DwnHandlingService>();
+        services.AddSingleton<IMatcherHandlingService, MatcherHandlingService>();
 
         services.AddSingleton<ISqsNotificationService, SqsNotificationService>();
         services.AddSingleton<ISnsNotificationService, SnsNotificationService>();
