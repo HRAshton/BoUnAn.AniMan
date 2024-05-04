@@ -9,4 +9,6 @@ public interface IAniManService
     Task<DwnQueueResponse> GetVideoToDownloadAsync();
 
     Task UpdateVideoStatusAsync(DwnResultNotification notification);
+
+    Task UpdateVideoScenesAsync(VideoScenesResponse response);
 }

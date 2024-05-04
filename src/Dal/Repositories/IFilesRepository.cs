@@ -16,4 +16,6 @@ public interface IFilesRepository
     Task AttachUserToAnimeAsync(IVideoKey videoKey, long requestChatId);
 
     Task<IVideoKey?> PopSignedLinkToDownloadAsync();
+
+    Task UpdateScenesAsync(IVideoKey videoKey, Scenes scenes);
 }

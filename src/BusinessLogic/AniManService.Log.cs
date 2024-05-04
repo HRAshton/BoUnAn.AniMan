@@ -50,5 +50,14 @@ internal partial class AniManService
 
         [LoggerMessage(14, LogLevel.Information, "Sending notification to Bot: {@notification}")]
         public static partial void SendingNotificationToBot(ILogger logger, BotNotification notification);
+
+        [LoggerMessage(15, LogLevel.Information, "Received response from Matcher: {@notification}")]
+        public static partial void ReceivedScenesResponse(ILogger logger, VideoScenesResponse notification);
+
+        [LoggerMessage(16, LogLevel.Information, "Scenes have not been updated")]
+        public static partial void ScenesHaveNotBeenUpdated(ILogger logger);
+
+        [LoggerMessage(17, LogLevel.Information, "Scenes have been updated")]
+        public static partial void ScenesHaveBeenUpdated(ILogger logger);
     }
 }

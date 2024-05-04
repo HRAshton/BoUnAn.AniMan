@@ -11,32 +11,38 @@ namespace Bounan.AniMan.Endpoint;
 
 public class LambdaHandlers
 {
-	public LambdaHandlers()
-	{
-		var services = new ServiceCollection();
-		Bootstrap.ConfigureServices(services);
-		var buildServiceProvider = services.BuildServiceProvider();
+    public LambdaHandlers()
+    {
+        var services = new ServiceCollection();
+        Bootstrap.ConfigureServices(services);
+        var buildServiceProvider = services.BuildServiceProvider();
 
-		AniManService = buildServiceProvider.GetRequiredService<IAniManService>();
-	}
+        AniManService = buildServiceProvider.GetRequiredService<IAniManService>();
+    }
 
-	private IAniManService AniManService { get; }
+    private IAniManService AniManService { get; }
 
-	[LambdaFunction]
-	public Task<BotResponse> GetAnimeAsync(BotRequest request, ILambdaContext context)
-	{
-		return AniManService.GetAnimeAsync(request);
-	}
+    [LambdaFunction]
+    public Task<BotResponse> GetAnimeAsync(BotRequest request, ILambdaContext context)
+    {
+        return AniManService.GetAnimeAsync(request);
+    }
 
-	[LambdaFunction]
-	public Task<DwnQueueResponse> GetVideoToDownloadAsync(ILambdaContext context)
-	{
-		return AniManService.GetVideoToDownloadAsync();
-	}
+    [LambdaFunction]
+    public Task<DwnQueueResponse> GetVideoToDownloadAsync(ILambdaContext context)
+    {
+        return AniManService.GetVideoToDownloadAsync();
+    }
 
-	[LambdaFunction]
-	public async Task UpdateVideoStatusAsync(DwnResultNotification notification, ILambdaContext context)
-	{
-		await AniManService.UpdateVideoStatusAsync(notification);
-	}
+    [LambdaFunction]
+    public Task UpdateVideoStatusAsync(DwnResultNotification notification, ILambdaContext context)
+    {
+        return AniManService.UpdateVideoStatusAsync(notification);
+    }
+
+    [LambdaFunction]
+    public Task UpdateVideoScenesAsync(VideoScenesResponse response, ILambdaContext context)
+    {
+        return AniManService.UpdateVideoScenesAsync(response);
+    }
 }

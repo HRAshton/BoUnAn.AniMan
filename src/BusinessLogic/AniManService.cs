@@ -84,6 +84,19 @@ internal partial class AniManService(
         await NotifyUsersAsync(video, usersToNotify, notification.MessageId);
     }
 
+    public async Task UpdateVideoScenesAsync(VideoScenesResponse response)
+    {
+        Log.ReceivedScenesResponse(Logger, response);
+        if (response.Scenes is null)
+        {
+            Log.ScenesHaveNotBeenUpdated(Logger);
+            return;
+        }
+
+        await FilesRepository.UpdateScenesAsync(response.VideoKey, response.Scenes);
+        Log.ScenesHaveBeenUpdated(Logger);
+    }
+
     private async Task<VideoStatus> AddAnimeAsync(IBotRequest request)
     {
         var videoInfos = await BotLoanApiClient.GetExistingVideos(request.MyAnimeListId);

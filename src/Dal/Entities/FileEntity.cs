@@ -8,49 +8,52 @@ namespace Bounan.AniMan.Dal.Entities;
 [DynamoDBTable("DUMMY")]
 public class FileEntity : IVideoKey
 {
-	[DynamoDBHashKey]
-	public string PrimaryKey
-	{
-		get => this.ToKey();
-		// ReSharper disable once ValueParameterNotUsed - Required by DynamoDB
-		private init { }
-	}
+    [DynamoDBHashKey]
+    public string PrimaryKey
+    {
+        get => this.ToKey();
+        // ReSharper disable once ValueParameterNotUsed - Required by DynamoDB
+        private init { }
+    }
 
-	[DynamoDBProperty]
-	public string? SortKey
-	{
-		get => Status == VideoStatus.Pending
-			? $"{(Subscribers is null ? 1 : 0)}#{CreatedAt:O}"
-			: null;
-		// ReSharper disable once ValueParameterNotUsed - Required by DynamoDB
-		private init { }
-	}
+    [DynamoDBProperty]
+    public string? SortKey
+    {
+        get => Status == VideoStatus.Pending
+            ? $"{(Subscribers is null ? 1 : 0)}#{CreatedAt:O}"
+            : null;
+        // ReSharper disable once ValueParameterNotUsed - Required by DynamoDB
+        private init { }
+    }
 
-	[DynamoDBProperty]
-	public required int MyAnimeListId { get; init; }
+    [DynamoDBProperty]
+    public required int MyAnimeListId { get; init; }
 
-	[DynamoDBProperty]
-	public required string Dub { get; init; }
+    [DynamoDBProperty]
+    public required string Dub { get; init; }
 
-	[DynamoDBProperty]
-	public required int Episode { get; init; }
+    [DynamoDBProperty]
+    public required int Episode { get; init; }
 
-	[DynamoDBProperty]
-	public required DateTime CreatedAt { get; init; }
+    [DynamoDBProperty]
+    public required DateTime CreatedAt { get; init; }
 
-	[DynamoDBProperty]
-	public required VideoStatus Status { get; set; }
+    [DynamoDBProperty]
+    public required VideoStatus Status { get; set; }
 
-	[DynamoDBProperty]
-	public required DateTime UpdatedAt { get; set; }
+    [DynamoDBProperty]
+    public required DateTime UpdatedAt { get; set; }
 
-	[DynamoDBProperty]
-	public HashSet<long>? Subscribers { get; set; }
+    [DynamoDBProperty]
+    public HashSet<long>? Subscribers { get; set; }
 
     [DynamoDBProperty]
     public int? MessageId { get; set; }
 
-	[DynamoDBProperty]
+    [DynamoDBProperty]
     [Obsolete("Use MessageId instead.")]
-	public string? FileId { get; set; }
+    public string? FileId { get; set; }
+
+    [DynamoDBProperty]
+    public Scenes? Scenes { get; set; }
 }

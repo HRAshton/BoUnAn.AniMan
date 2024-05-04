@@ -13,7 +13,7 @@ namespace Bounan.AniMan.Dal.Repositories;
 internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<StorageConfig> databaseConfig)
     : IFilesRepository
 {
-    private readonly DynamoDBOperationConfig _dynamoDbOperationConfig = new()
+    private readonly DynamoDBOperationConfig _dynamoDbOperationConfig = new ()
     {
         OverrideTableName = databaseConfig.Value.TableName,
         IndexName = databaseConfig.Value.SecondaryIndexName
@@ -75,7 +75,7 @@ internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<Storag
     {
         var video = await Context.LoadAsync<FileEntity>(videoKey.ToKey(), _dynamoDbOperationConfig);
 
-        video.Subscribers ??= [];
+        video.Subscribers ??= [ ];
         video.Subscribers.Add(requestChatId);
         video.UpdatedAt = DateTime.UtcNow;
 
@@ -93,7 +93,7 @@ internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<Storag
             Filter = new QueryFilter(
                 "Status",
                 QueryOperator.Equal,
-                [new AttributeValue { N = VideoStatus.Pending.ToString("D") }]
+                [ new AttributeValue { N = VideoStatus.Pending.ToString("D") } ]
             ),
             Limit = 1,
             BackwardSearch = false
@@ -113,5 +113,15 @@ internal class FilesRepository(IDynamoDBContext dynamoDbContext, IOptions<Storag
         await Context.SaveAsync(video, _dynamoDbOperationConfig);
 
         return video;
+    }
+
+    public async Task UpdateScenesAsync(IVideoKey videoKey, Scenes scenes)
+    {
+        var video = await Context.LoadAsync<FileEntity>(videoKey.ToKey(), _dynamoDbOperationConfig);
+
+        video.Scenes = scenes;
+        video.UpdatedAt = DateTime.UtcNow;
+
+        await Context.SaveAsync(video, _dynamoDbOperationConfig);
     }
 }
