@@ -1,4 +1,5 @@
-﻿using Bounan.AniMan.BusinessLogic.Interfaces;
+﻿using System.Text.Json;
+using Bounan.AniMan.BusinessLogic.Interfaces;
 using Bounan.AniMan.BusinessLogic.Models;
 using Bounan.AniMan.Dal.Repositories;
 using Bounan.Common.Models;
@@ -25,7 +26,7 @@ internal partial class MatcherHandlingService(
                 .Select(v => new VideoKey(v.MyAnimeListId, v.Dub, v.Episode))
                 .ToList(),
         };
-        Log.CollectedVideosToMatch(Logger, result.VideosToMatch.Count, result);
+        Log.CollectedVideosToMatch(Logger, result.VideosToMatch.Count, JsonSerializer.Serialize(result));
 
         return result;
     }

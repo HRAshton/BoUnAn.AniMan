@@ -10,8 +10,8 @@ internal partial class MatcherHandlingService
         [LoggerMessage(LogLevel.Information, "Collecting videos to match")]
         public static partial void CollectingVideosToMatch(ILogger logger);
 
-        [LoggerMessage(LogLevel.Information, "Collected {count} videos to match: {@result}")]
-        public static partial void CollectedVideosToMatch(ILogger logger, int count, MatcherResponse result);
+        [LoggerMessage(LogLevel.Information, "Collected {count} videos to match: {result}")]
+        public static partial void CollectedVideosToMatch(ILogger logger, int count, string result);
 
         [LoggerMessage(LogLevel.Information, "Received response from Matcher: {@notification}")]
         public static partial void ReceivedScenesResponse(ILogger logger, VideoScenesResponse notification);

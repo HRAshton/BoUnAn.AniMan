@@ -164,7 +164,14 @@ public class AniManCdkStack : Stack
         ITopic newEpisodeTopic,
         ILogGroup logGroup)
     {
-        string[] methods = [ "GetAnime", "GetVideoToDownload", "UpdateVideoStatus", "UpdateVideoScenes" ];
+        string[] methods =
+        [
+            "GetAnime",
+            "GetVideoToDownload",
+            "UpdateVideoStatus",
+            "GetSeriesToMatch",
+            "UpdateVideoScenes",
+        ];
 
         var asset = Code.FromAsset("src", new AssetOptions
         {
