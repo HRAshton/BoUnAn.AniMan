@@ -17,18 +17,27 @@ internal class SnsNotificationService(
 
     private IAmazonSimpleNotificationService SnsClient { get; } = snsClient;
 
-    public Task NotifyVideoRegisteredAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Sends a notification that a video has been registered.
+    /// </summary>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    public Task NotifyVideoRegisteredAsync()
     {
         var request = new PublishRequest
         {
             TopicArn = _notificationsConfig.VideoRegisteredTopicArn,
-            Message = JsonSerializer.Serialize(new { NewEpisode = true }),
+            Message = JsonSerializer.Serialize(new VideoRegisteredNotification()),
         };
 
-        return SnsClient.PublishAsync(request, cancellationToken);
+        return SnsClient.PublishAsync(request);
     }
 
-    public Task NotifyVideoDownloaded(BotNotification notification, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Sends a notification that a video has been downloaded or failed to download.
+    /// </summary>
+    /// <param name="notification">The notification to send.</param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    public Task NotifyVideoDownloaded(VideoDownloadedNotification notification)
     {
         var request = new PublishRequest
         {
@@ -36,6 +45,6 @@ internal class SnsNotificationService(
             Message = JsonSerializer.Serialize(notification),
         };
 
-        return SnsClient.PublishAsync(request, cancellationToken);
+        return SnsClient.PublishAsync(request);
     }
 }

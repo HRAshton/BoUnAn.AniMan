@@ -24,6 +24,6 @@ internal partial class DwnHandlingService
         public static partial void UsersToNotify(ILogger logger, ICollection<long> users);
 
         [LoggerMessage(LogLevel.Information, "Sending notification to Bot: {@notification}")]
-        public static partial void SendingNotificationToBot(ILogger logger, BotNotification notification);
+        public static partial void SendingNotificationToBot(ILogger logger, VideoDownloadedNotification notification);
     }
 }

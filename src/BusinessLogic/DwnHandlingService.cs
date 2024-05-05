@@ -55,8 +55,12 @@ internal partial class DwnHandlingService(
         }
 
         Log.UsersToNotify(Logger, usersToNotify);
-        var botNotification =
-            new BotNotification(usersToNotify, videoKey.MyAnimeListId, videoKey.Dub, videoKey.Episode, messageId);
+        var botNotification = new VideoDownloadedNotification(
+            videoKey.MyAnimeListId,
+            videoKey.Dub,
+            videoKey.Episode,
+            messageId,
+            usersToNotify);
 
         Log.SendingNotificationToBot(Logger, botNotification);
         await SnsNotificationService.NotifyVideoDownloaded(botNotification);

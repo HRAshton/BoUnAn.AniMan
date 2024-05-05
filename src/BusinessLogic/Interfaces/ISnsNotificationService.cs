@@ -4,7 +4,7 @@ namespace Bounan.AniMan.BusinessLogic.Interfaces;
 
 internal interface ISnsNotificationService
 {
-    Task NotifyVideoRegisteredAsync(CancellationToken cancellationToken = default);
+    Task NotifyVideoRegisteredAsync();
 
-    Task NotifyVideoDownloaded(BotNotification notification, CancellationToken cancellationToken = default);
+    Task NotifyVideoDownloaded(VideoDownloadedNotification notification);
 }
