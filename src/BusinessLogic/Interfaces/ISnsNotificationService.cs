@@ -1,6 +1,10 @@
-﻿namespace Bounan.AniMan.BusinessLogic.Interfaces;
+﻿using Bounan.AniMan.BusinessLogic.Models;
+
+namespace Bounan.AniMan.BusinessLogic.Interfaces;
 
 internal interface ISnsNotificationService
 {
-    Task NotifyNewEpisodeAsync(CancellationToken cancellationToken = default);
+    Task NotifyVideoRegisteredAsync(CancellationToken cancellationToken = default);
+
+    Task NotifyVideoDownloaded(BotNotification notification, CancellationToken cancellationToken = default);
 }

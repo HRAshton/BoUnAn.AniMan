@@ -37,7 +37,8 @@ public class AniManCdkStack : Stack
 
         var (table, dwnSecondaryIndex, matcherSecondaryIndex) = CreateFilesTable();
         var botNotificationsQueue = CreateBotNotificationsQueue();
-        var newEpisodeTopic = CreateNewEpisodeTopic();
+        var videoRegisteredTopic = CreateVideoRegisteredTopic();
+        var videoDownloadedTopic = CreateVideoDownloadedTopic();
 
         var logGroup = CreateLogGroup();
         SetErrorAlarm(config, logGroup);
@@ -48,7 +49,8 @@ public class AniManCdkStack : Stack
             dwnSecondaryIndex.IndexName,
             matcherSecondaryIndex.IndexName,
             botNotificationsQueue,
-            newEpisodeTopic,
+            videoRegisteredTopic,
+            videoDownloadedTopic,
             logGroup);
 
         CreateWarmer(config, getAnimeLambda);
@@ -57,9 +59,8 @@ public class AniManCdkStack : Stack
         Out("Bounan.AniMan.GetAnimeLambdaArn", getAnimeLambda.FunctionArn);
         Out("Bounan.AniMan.GetVideoToDownloadLambdaName", getVideoToDownloadLambda.FunctionName);
         Out("Bounan.AniMan.UpdateVideoStatusLambdaName", updateVideoStatusLambda.FunctionName);
-        Out("Bounan.AniMan.BotNotificationsQueueUrl", botNotificationsQueue.QueueUrl);
-        Out("Bounan.AniMan.BotNotificationsQueueArn", botNotificationsQueue.QueueArn);
-        Out("Bounan.AniMan.NewEpisodeTopicArn", newEpisodeTopic.TopicArn);
+        Out("Bounan.AniMan.VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn);
+        Out("Bounan.AniMan.VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn);
         Out("Bounan.AniMan.FilesTableName", table.TableName);
     }
 
@@ -118,9 +119,14 @@ public class AniManCdkStack : Stack
         return new Queue(this, "BotNotificationsSqsQueue");
     }
 
-    private ITopic CreateNewEpisodeTopic()
+    private ITopic CreateVideoRegisteredTopic()
     {
-        return new Topic(this, "NewEpisodeSnsTopic");
+        return new Topic(this, "VideoRegisteredSnsTopic");
+    }
+
+    private ITopic CreateVideoDownloadedTopic()
+    {
+        return new Topic(this, "VideoDownloadedSnsTopic");
     }
 
     private ILogGroup CreateLogGroup()
@@ -161,7 +167,8 @@ public class AniManCdkStack : Stack
         string dwnSecondaryIndexName,
         string matcherSecondaryIndexName,
         IQueue botNotificationsQueue,
-        ITopic newEpisodeTopic,
+        ITopic videoRegisteredTopic,
+        ITopic videoDownloadedTopic,
         ILogGroup logGroup)
     {
         string[] methods =
@@ -205,7 +212,8 @@ public class AniManCdkStack : Stack
                     { "Storage__TableName", filesTable.TableName },
                     { "Storage__SecondaryIndexName", dwnSecondaryIndexName },
                     { "Storage__MatcherSecondaryIndexName", matcherSecondaryIndexName },
-                    { "NewEpisodeNotification__TopicArn", newEpisodeTopic.TopicArn },
+                    { "Notifications__VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn },
+                    { "Notifications__VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn },
                     { "Bot__NotificationQueueUrl", botNotificationsQueue.QueueUrl },
                 }
             }))
@@ -218,7 +226,7 @@ public class AniManCdkStack : Stack
 
         var getAnimeLambda = functions[0];
         botNotificationsQueue.GrantSendMessages(getAnimeLambda);
-        newEpisodeTopic.GrantPublish(getAnimeLambda);
+        videoRegisteredTopic.GrantPublish(getAnimeLambda);
 
         var updateVideoStatusLambda = functions[2];
         botNotificationsQueue.GrantSendMessages(updateVideoStatusLambda);

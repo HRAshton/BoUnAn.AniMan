@@ -18,23 +18,8 @@ DwnResultNotification notification;
 
 if (false)
 {
-    await lambdaHandlers.UpdateVideoScenesAsync(
-        new VideoScenesResponse(
-            new VideoKey(10686, "AniDUB", 0),
-            new Scenes
-            {
-                Opening = new Interval<float>
-                {
-                    Start = 0f,
-                    End = 1f
-                },
-                Ending = new Interval<float>
-                {
-                    Start = 0f,
-                    End = 1f
-                },
-            }),
-        context);
+    await lambdaHandlers.GetSeriesToMatchAsync(context);
+    return;
 }
 
 // 1. Request anime that does not exist

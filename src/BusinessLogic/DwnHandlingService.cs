@@ -9,14 +9,14 @@ namespace Bounan.AniMan.BusinessLogic;
 internal partial class DwnHandlingService(
     ILogger<DwnHandlingService> logger,
     IFilesRepository filesRepository,
-    ISqsNotificationService sqsNotificationService)
+    ISnsNotificationService snsNotificationService)
     : IDwnHandlingService
 {
     private ILogger Logger { get; } = logger;
 
     private IFilesRepository FilesRepository { get; } = filesRepository;
 
-    private ISqsNotificationService SqsNotificationService { get; } = sqsNotificationService;
+    private ISnsNotificationService SnsNotificationService { get; } = snsNotificationService;
 
     public async Task<DwnQueueResponse> GetVideoToDownloadAsync()
     {
@@ -59,6 +59,6 @@ internal partial class DwnHandlingService(
             new BotNotification(usersToNotify, videoKey.MyAnimeListId, videoKey.Dub, videoKey.Episode, messageId);
 
         Log.SendingNotificationToBot(Logger, botNotification);
-        await SqsNotificationService.NotifyBotAsync(botNotification);
+        await SnsNotificationService.NotifyVideoDownloaded(botNotification);
     }
 }

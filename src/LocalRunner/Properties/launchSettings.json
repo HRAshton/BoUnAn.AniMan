@@ -10,7 +10,8 @@
         "Storage__TableName": "",
         "Storage__SecondaryIndexName": "",
         "Storage__MatcherSecondaryIndexName": "",
-        "NewEpisodeNotification__TopicArn": "",
+        "Notifications__VideoRegisteredTopicArn": "",
+        "Notifications__VideoDownloadedTopicArn": "",
         "Bot__NotificationQueueUrl": "",
         "DUMMY": ""
       }

@@ -91,7 +91,7 @@ internal partial class BotHandlingService(
 
         if (atLeastOneAdded)
         {
-            await SnsNotificationService.NotifyNewEpisodeAsync();
+            await SnsNotificationService.NotifyVideoRegisteredAsync();
             Log.NotificationSentToSns(Logger);
         }
 

@@ -15,7 +15,6 @@ public static class Registrar
         services.AddSingleton<IDwnHandlingService, DwnHandlingService>();
         services.AddSingleton<IMatcherHandlingService, MatcherHandlingService>();
 
-        services.AddSingleton<ISqsNotificationService, SqsNotificationService>();
         services.AddSingleton<ISnsNotificationService, SnsNotificationService>();
 
         services.AddSingleton<IAmazonSQS, AmazonSQSClient>();
@@ -24,8 +23,6 @@ public static class Registrar
 
     public static void RegisterConfiguration(IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<BotConfig>(configuration.GetSection(BotConfig.SectionName));
-        services.Configure<NewEpisodeNotificationConfig>(
-            configuration.GetSection(NewEpisodeNotificationConfig.SectionName));
+        services.Configure<NotificationsConfig>(configuration.GetSection(NotificationsConfig.SectionName));
     }
 }
