@@ -1,4 +1,5 @@
-﻿using Bounan.Common.Models.Notifications;
+﻿using Bounan.Common.Models;
+using Bounan.Common.Models.Notifications;
 
 namespace Bounan.AniMan.BusinessLogic.Models;
 
@@ -8,5 +9,6 @@ internal record VideoDownloadedNotification(
     string Dub,
     int Episode,
     int? MessageId,
-    ICollection<long> ChatIds)
+    ICollection<long> ChatIds,
+    Scenes? Scenes)
     : IVideoDownloadedNotification;

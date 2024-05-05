@@ -43,10 +43,14 @@ internal partial class DwnHandlingService(
         }
 
         var usersToNotify = video.Subscribers;
-        await NotifyUsersAsync(video, usersToNotify, notification.MessageId);
+        await NotifyUsersAsync(video, usersToNotify, notification.MessageId, video.Scenes);
     }
 
-    private async Task NotifyUsersAsync(IVideoKey videoKey, ICollection<long>? usersToNotify, int? messageId)
+    private async Task NotifyUsersAsync(
+        IVideoKey videoKey,
+        ICollection<long>? usersToNotify,
+        int? messageId,
+        Scenes? scenes)
     {
         if (usersToNotify is null || usersToNotify.Count == 0)
         {
@@ -60,7 +64,8 @@ internal partial class DwnHandlingService(
             videoKey.Dub,
             videoKey.Episode,
             messageId,
-            usersToNotify);
+            usersToNotify,
+            scenes);
 
         Log.SendingNotificationToBot(Logger, botNotification);
         await SnsNotificationService.NotifyVideoDownloaded(botNotification);

@@ -36,17 +36,17 @@ internal partial class BotHandlingService(
         {
             case VideoStatus.Downloaded or VideoStatus.Failed:
                 Log.ReturningVideoAsIs(Logger);
-                return new BotResponse(video.Status, video.MessageId);
+                return new BotResponse(video.Status, video.MessageId, video.Scenes);
 
             case VideoStatus.Pending or VideoStatus.Downloading:
                 Log.AttachingUserToAnime(Logger);
                 await FilesRepository.AttachUserToAnimeAsync(video, request.ChatId);
-                return new BotResponse(VideoStatus.Pending, null);
+                return new BotResponse(VideoStatus.Pending, MessageId: null, Scenes: null);
 
             case null:
                 Log.AddingAnime(Logger);
                 var status = await AddAnimeAsync(request);
-                return new BotResponse(status, null);
+                return new BotResponse(status, MessageId: null, Scenes: null);
 
             default:
                 throw new InvalidOperationException();
