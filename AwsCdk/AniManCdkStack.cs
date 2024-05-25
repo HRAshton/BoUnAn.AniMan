@@ -43,7 +43,11 @@ public class AniManCdkStack : Stack
         var logGroup = CreateLogGroup();
         SetErrorAlarm(config, logGroup);
 
-        var (getAnimeLambda, getVideoToDownloadLambda, updateVideoStatusLambda) = CreateLambdas(
+        var (getAnimeLambda,
+            getVideoToDownloadLambda,
+            updateVideoStatusLambda,
+            getSeriesToMatchLambda,
+            updateVideoScenesLambda) = CreateLambdas(
             config,
             table,
             dwnSecondaryIndex.IndexName,
@@ -59,6 +63,8 @@ public class AniManCdkStack : Stack
         Out("Bounan.AniMan.GetAnimeLambdaArn", getAnimeLambda.FunctionArn);
         Out("Bounan.AniMan.GetVideoToDownloadLambdaName", getVideoToDownloadLambda.FunctionName);
         Out("Bounan.AniMan.UpdateVideoStatusLambdaName", updateVideoStatusLambda.FunctionName);
+        Out("Bounan.AniMan.GetSeriesToMatchLambdaName", getSeriesToMatchLambda.FunctionName);
+        Out("Bounan.AniMan.UpdateVideoScenesLambdaName", updateVideoScenesLambda.FunctionName);
         Out("Bounan.AniMan.VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn);
         Out("Bounan.AniMan.VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn);
         Out("Bounan.AniMan.FilesTableName", table.TableName);
@@ -161,7 +167,7 @@ public class AniManCdkStack : Stack
         alarm.AddAlarmAction(new AlarmActions.SnsAction(topic));
     }
 
-    private (IFunction, IFunction, IFunction) CreateLambdas(
+    private (IFunction, IFunction, IFunction, IFunction, IFunction) CreateLambdas(
         BounanCdkStackConfig bounanCdkStackConfig,
         ITable filesTable,
         string dwnSecondaryIndexName,
@@ -231,7 +237,7 @@ public class AniManCdkStack : Stack
         var updateVideoStatusLambda = functions[2];
         botNotificationsQueue.GrantSendMessages(updateVideoStatusLambda);
 
-        return (functions[0], functions[1], functions[2]);
+        return (functions[0], functions[1], functions[2], functions[3], functions[4]);
     }
 
     private void CreateWarmer(BounanCdkStackConfig bounanCdkStackConfig, IFunction webhookHandler)
