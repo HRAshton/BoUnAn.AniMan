@@ -57,6 +57,14 @@ public class AniManCdkStack : Stack
         Out("VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn);
         Out("FilesTableName", table.TableName);
         functions.ToList().ForEach(kv => Out($"{kv.Key}LambdaName", kv.Value.FunctionName));
+
+        Out("DownloaderConfig", JsonConvert.SerializeObject(new
+        {
+            config.AlertEmail,
+            GetVideoToDownloadLambdaFunctionName = functions[LambdaHandler.GetVideoToDownload].FunctionName,
+            UpdateVideoStatusLambdaFunctionName = functions[LambdaHandler.UpdateVideoStatus].FunctionName,
+            VideoRegisteredTopicArn = videoRegisteredTopic.TopicArn,
+        }));
     }
 
     private (ITable, IGlobalSecondaryIndexProps, IGlobalSecondaryIndexProps) CreateFilesTable()
@@ -181,7 +189,7 @@ public class AniManCdkStack : Stack
         var functions = Enum.GetValues<LambdaHandler>()
             .ToDictionary(
                 name => name,
-                name => new Function(this, $"LambdaHandlers.{name}", new FunctionProps
+                name => new Function(this, name.ToString(), new FunctionProps
                 {
                     Runtime = Runtime.DOTNET_8,
                     Code = asset,
@@ -228,6 +236,7 @@ public class AniManCdkStack : Stack
         _ = new CfnOutput(this, key, new CfnOutputProps { Value = value });
     }
 
+    [SuppressMessage("ReSharper", "UnusedMember.Local")]
     private enum LambdaHandler
     {
         GetAnime,
