@@ -65,6 +65,17 @@ public class AniManCdkStack : Stack
             UpdateVideoStatusLambdaFunctionName = functions[LambdaHandler.UpdateVideoStatus].FunctionName,
             VideoRegisteredTopicArn = videoRegisteredTopic.TopicArn,
         }));
+        Out("BotConfig", JsonConvert.SerializeObject(new
+        {
+            config.AlertEmail,
+            config.LoanApiToken,
+            GetAnimeFunctionName = functions[LambdaHandler.GetAnime].FunctionName,
+            VideoDownloadedTopicArn = videoDownloadedTopic.TopicArn,
+            TelegramBotToken = 0,
+            TelegramBotVideoChatId = 0,
+            TelegramBotForwardingChatId = 0,
+            WarmupTimeoutMinutes = 5
+        }));
     }
 
     private (ITable, IGlobalSecondaryIndexProps, IGlobalSecondaryIndexProps) CreateFilesTable()
