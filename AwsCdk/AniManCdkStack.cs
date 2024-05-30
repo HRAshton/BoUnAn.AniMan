@@ -10,7 +10,6 @@ using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.SNS;
 using Amazon.CDK.AWS.SNS.Subscriptions;
-using Amazon.CDK.AWS.SQS;
 using Constructs;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -36,38 +35,28 @@ public class AniManCdkStack : Stack
         config.Validate();
 
         var (table, dwnSecondaryIndex, matcherSecondaryIndex) = CreateFilesTable();
-        var botNotificationsQueue = CreateBotNotificationsQueue();
         var videoRegisteredTopic = CreateVideoRegisteredTopic();
         var videoDownloadedTopic = CreateVideoDownloadedTopic();
 
         var logGroup = CreateLogGroup();
         SetErrorAlarm(config, logGroup);
 
-        var (getAnimeLambda,
-            getVideoToDownloadLambda,
-            updateVideoStatusLambda,
-            getSeriesToMatchLambda,
-            updateVideoScenesLambda) = CreateLambdas(
+        var functions = CreateLambdas(
             config,
             table,
             dwnSecondaryIndex.IndexName,
             matcherSecondaryIndex.IndexName,
-            botNotificationsQueue,
             videoRegisteredTopic,
             videoDownloadedTopic,
             logGroup);
 
-        CreateWarmer(config, getAnimeLambda);
+        CreateWarmer(config, functions[LambdaHandler.GetAnime]);
 
-        Out("Bounan.Downloader.Config", JsonConvert.SerializeObject(config));
-        Out("Bounan.AniMan.GetAnimeLambdaArn", getAnimeLambda.FunctionArn);
-        Out("Bounan.AniMan.GetVideoToDownloadLambdaName", getVideoToDownloadLambda.FunctionName);
-        Out("Bounan.AniMan.UpdateVideoStatusLambdaName", updateVideoStatusLambda.FunctionName);
-        Out("Bounan.AniMan.GetSeriesToMatchLambdaName", getSeriesToMatchLambda.FunctionName);
-        Out("Bounan.AniMan.UpdateVideoScenesLambdaName", updateVideoScenesLambda.FunctionName);
-        Out("Bounan.AniMan.VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn);
-        Out("Bounan.AniMan.VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn);
-        Out("Bounan.AniMan.FilesTableName", table.TableName);
+        Out("Config", JsonConvert.SerializeObject(config));
+        Out("VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn);
+        Out("VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn);
+        Out("FilesTableName", table.TableName);
+        functions.ToList().ForEach(kv => Out($"{kv.Key}LambdaName", kv.Value.FunctionName));
     }
 
     private (ITable, IGlobalSecondaryIndexProps, IGlobalSecondaryIndexProps) CreateFilesTable()
@@ -120,11 +109,6 @@ public class AniManCdkStack : Stack
         return (filesTable, dwnSecondaryIndex, matcherSecondaryIndex);
     }
 
-    private IQueue CreateBotNotificationsQueue()
-    {
-        return new Queue(this, "BotNotificationsSqsQueue");
-    }
-
     private ITopic CreateVideoRegisteredTopic()
     {
         return new Topic(this, "VideoRegisteredSnsTopic");
@@ -167,25 +151,15 @@ public class AniManCdkStack : Stack
         alarm.AddAlarmAction(new AlarmActions.SnsAction(topic));
     }
 
-    private (IFunction, IFunction, IFunction, IFunction, IFunction) CreateLambdas(
+    private Dictionary<LambdaHandler, Function> CreateLambdas(
         BounanCdkStackConfig bounanCdkStackConfig,
         ITable filesTable,
         string dwnSecondaryIndexName,
         string matcherSecondaryIndexName,
-        IQueue botNotificationsQueue,
         ITopic videoRegisteredTopic,
         ITopic videoDownloadedTopic,
         ILogGroup logGroup)
     {
-        string[] methods =
-        [
-            "GetAnime",
-            "GetVideoToDownload",
-            "UpdateVideoStatus",
-            "GetSeriesToMatch",
-            "UpdateVideoScenes",
-        ];
-
         var asset = Code.FromAsset("src", new AssetOptions
         {
             Bundling = new BundlingOptions
@@ -204,40 +178,39 @@ public class AniManCdkStack : Stack
             }
         });
 
-        var functions = methods
-            .Select(name => new Function(this, $"LambdaHandlers.{name}", new FunctionProps
-            {
-                Runtime = Runtime.DOTNET_8,
-                Code = asset,
-                Handler = $"Bounan.AniMan.Endpoint::Bounan.AniMan.Endpoint.LambdaHandlers::{name}Async",
-                Timeout = Duration.Seconds(300),
-                LogGroup = logGroup,
-                Environment = new Dictionary<string, string>
+        var functions = Enum.GetValues<LambdaHandler>()
+            .ToDictionary(
+                name => name,
+                name => new Function(this, $"LambdaHandlers.{name}", new FunctionProps
                 {
-                    { "LoanApi__Token", bounanCdkStackConfig.LoanApiToken },
-                    { "Storage__TableName", filesTable.TableName },
-                    { "Storage__SecondaryIndexName", dwnSecondaryIndexName },
-                    { "Storage__MatcherSecondaryIndexName", matcherSecondaryIndexName },
-                    { "Notifications__VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn },
-                    { "Notifications__VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn },
-                    { "Bot__NotificationQueueUrl", botNotificationsQueue.QueueUrl },
-                }
-            }))
-            .ToArray();
+                    Runtime = Runtime.DOTNET_8,
+                    Code = asset,
+                    Handler = $"Bounan.AniMan.Endpoint::Bounan.AniMan.Endpoint.LambdaHandlers::{name}Async",
+                    Timeout = Duration.Seconds(300),
+                    LogGroup = logGroup,
+                    Environment = new Dictionary<string, string>
+                    {
+                        { "LoanApi__Token", bounanCdkStackConfig.LoanApiToken },
+                        { "Storage__TableName", filesTable.TableName },
+                        { "Storage__SecondaryIndexName", dwnSecondaryIndexName },
+                        { "Storage__MatcherSecondaryIndexName", matcherSecondaryIndexName },
+                        { "Notifications__VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn },
+                        { "Notifications__VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn },
+                    }
+                }));
 
         foreach (var function in functions)
         {
-            filesTable.GrantReadWriteData(function);
+            filesTable.GrantReadWriteData(function.Value);
         }
 
-        var getAnimeLambda = functions[0];
-        botNotificationsQueue.GrantSendMessages(getAnimeLambda);
+        var getAnimeLambda = functions[LambdaHandler.GetAnime];
         videoRegisteredTopic.GrantPublish(getAnimeLambda);
 
-        var updateVideoStatusLambda = functions[2];
-        botNotificationsQueue.GrantSendMessages(updateVideoStatusLambda);
+        var updateVideoStatusLambda = functions[LambdaHandler.UpdateVideoStatus];
+        videoDownloadedTopic.GrantPublish(updateVideoStatusLambda);
 
-        return (functions[0], functions[1], functions[2], functions[3], functions[4]);
+        return functions;
     }
 
     private void CreateWarmer(BounanCdkStackConfig bounanCdkStackConfig, IFunction webhookHandler)
@@ -253,5 +226,14 @@ public class AniManCdkStack : Stack
     private void Out(string key, string value)
     {
         _ = new CfnOutput(this, key, new CfnOutputProps { Value = value });
+    }
+
+    private enum LambdaHandler
+    {
+        GetAnime,
+        GetVideoToDownload,
+        UpdateVideoStatus,
+        GetSeriesToMatch,
+        UpdateVideoScenes,
     }
 }

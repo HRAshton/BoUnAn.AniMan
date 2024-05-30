@@ -12,7 +12,6 @@
         "Storage__MatcherSecondaryIndexName": "",
         "Notifications__VideoRegisteredTopicArn": "",
         "Notifications__VideoDownloadedTopicArn": "",
-        "Bot__NotificationQueueUrl": "",
         "DUMMY": ""
       }
     }
