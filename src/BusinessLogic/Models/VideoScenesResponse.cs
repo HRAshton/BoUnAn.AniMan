@@ -2,4 +2,5 @@
 
 namespace Bounan.AniMan.BusinessLogic.Models;
 
-public record VideoScenesResponse(VideoKey VideoKey, Scenes Scenes) : IVideoScenesResponse;
+public record VideoScenesResponse(ICollection<VideoScenesResponseItem> Items)
+    : IVideoScenesResponse<VideoScenesResponseItem>;

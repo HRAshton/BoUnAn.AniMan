@@ -108,20 +108,23 @@ Assert(matcherResponse.VideosToMatch.Count > 0, "12. Get anime as Matcher");
 // Attach the scenes to the video
 await lambdaHandlers.UpdateVideoScenesAsync(
     new VideoScenesResponse(
-        new VideoKey(10686, "AniDUB", 0),
-        new Scenes
-        {
-            Opening = new Interval<float>
+    [
+        new VideoScenesResponseItem(
+            new VideoKey(10686, "AniDUB", 0),
+            new Scenes
             {
-                Start = 0f,
-                End = 1f
-            },
-            Ending = new Interval<float>
-            {
-                Start = 0f,
-                End = 1f
-            },
-        }),
+                Opening = new Interval<float>
+                {
+                    Start = 0f,
+                    End = 1f
+                },
+                Ending = new Interval<float>
+                {
+                    Start = 0f,
+                    End = 1f
+                },
+            })
+    ]),
     context);
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(10686, "AniDUB", 0, 2000000000000003), context);
 Console.WriteLine(response);

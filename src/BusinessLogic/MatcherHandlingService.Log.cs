@@ -19,7 +19,10 @@ internal partial class MatcherHandlingService
         [LoggerMessage(LogLevel.Information, "Scenes have not been updated")]
         public static partial void ScenesHaveNotBeenUpdated(ILogger logger);
 
-        [LoggerMessage(LogLevel.Information, "Scenes have been updated")]
-        public static partial void ScenesHaveBeenUpdated(ILogger logger);
+        [LoggerMessage(LogLevel.Debug, "Scenes have been updated: {@scenes}")]
+        public static partial void ScenesHaveBeenUpdated(ILogger logger, VideoScenesResponseItem scenes);
+
+        [LoggerMessage(LogLevel.Information, "All scenes have been updated")]
+        public static partial void AllScenesHaveBeenUpdated(ILogger logger);
     }
 }

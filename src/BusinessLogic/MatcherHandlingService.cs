@@ -34,13 +34,12 @@ internal partial class MatcherHandlingService(
     public async Task UpdateVideoScenesAsync(VideoScenesResponse response)
     {
         Log.ReceivedScenesResponse(Logger, response);
-        if (response.Scenes is null)
+        foreach (var item in response.Items)
         {
-            Log.ScenesHaveNotBeenUpdated(Logger);
-            return;
+            await FilesRepository.UpdateScenesAsync(item.VideoKey, item.Scenes);
+            Log.ScenesHaveBeenUpdated(Logger, item);
         }
 
-        await FilesRepository.UpdateScenesAsync(response.VideoKey, response.Scenes);
-        Log.ScenesHaveBeenUpdated(Logger);
+        Log.AllScenesHaveBeenUpdated(Logger);
     }
 }
