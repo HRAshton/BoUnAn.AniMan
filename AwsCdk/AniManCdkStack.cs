@@ -76,6 +76,14 @@ public class AniManCdkStack : Stack
             TelegramBotForwardingChatId = 0,
             WarmupTimeoutMinutes = 5
         }));
+        Out("MatcherConfig", JsonConvert.SerializeObject(new
+        {
+            config.AlertEmail,
+            config.LoanApiToken,
+            GetSeriesToMatchLambdaName = functions[LambdaHandler.GetSeriesToMatch].FunctionName,
+            UpdateVideoScenesLambdaName = functions[LambdaHandler.UpdateVideoScenes].FunctionName,
+            VideoRegisteredTopicArn = videoRegisteredTopic.TopicArn,
+        }));
     }
 
     private (ITable, IGlobalSecondaryIndexProps, IGlobalSecondaryIndexProps) CreateFilesTable()
