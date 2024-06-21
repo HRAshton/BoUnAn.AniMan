@@ -24,5 +24,11 @@ internal partial class MatcherHandlingService
 
         [LoggerMessage(LogLevel.Information, "All scenes have been updated")]
         public static partial void AllScenesHaveBeenUpdated(ILogger logger);
+
+        [LoggerMessage(LogLevel.Error, "Failed to update scenes for {videoKey}: {exception}")]
+        public static partial void FailedToUpdateScenes(
+            ILogger logger,
+            VideoScenesResponseItem videoKey,
+            NullReferenceException exception);
     }
 }

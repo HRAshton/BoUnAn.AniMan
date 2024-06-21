@@ -36,8 +36,15 @@ internal partial class MatcherHandlingService(
         Log.ReceivedScenesResponse(Logger, response);
         foreach (var item in response.Items)
         {
-            await FilesRepository.UpdateScenesAsync(item.VideoKey, item.Scenes);
-            Log.ScenesHaveBeenUpdated(Logger, item);
+            try
+            {
+                await FilesRepository.UpdateScenesAsync(item.VideoKey, item.Scenes);
+                Log.ScenesHaveBeenUpdated(Logger, item);
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.FailedToUpdateScenes(Logger, item, ex);
+            }
         }
 
         Log.AllScenesHaveBeenUpdated(Logger);
