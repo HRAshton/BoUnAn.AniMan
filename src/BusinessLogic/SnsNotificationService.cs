@@ -47,4 +47,20 @@ internal class SnsNotificationService(
 
         return SnsClient.PublishAsync(request);
     }
+
+    /// <summary>
+    /// Sends a notification that a scene(s) has been recognised or failed to recognise.
+    /// </summary>
+    /// <param name="notification">The notification to send.</param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    public Task NotifySceneRecognised(SceneRecognisedNotification notification)
+    {
+        var request = new PublishRequest
+        {
+            TopicArn = _notificationsConfig.SceneRecognisedTopicArn,
+            Message = JsonSerializer.Serialize(notification),
+        };
+
+        return SnsClient.PublishAsync(request);
+    }
 }

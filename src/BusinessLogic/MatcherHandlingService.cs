@@ -9,7 +9,8 @@ namespace Bounan.AniMan.BusinessLogic;
 
 internal partial class MatcherHandlingService(
     ILogger<MatcherHandlingService> logger,
-    IFilesRepository filesRepository)
+    IFilesRepository filesRepository,
+    ISnsNotificationService sns)
     : IMatcherHandlingService
 {
     private ILogger Logger { get; } = logger;
@@ -46,6 +47,15 @@ internal partial class MatcherHandlingService(
                 Log.FailedToUpdateScenes(Logger, item, ex);
             }
         }
+
+        var notification = new SceneRecognisedNotification(response.Items
+            .Select(x => new SceneRecognisedNotificationItem(
+                x.VideoKey.MyAnimeListId,
+                x.VideoKey.Dub,
+                x.VideoKey.Episode,
+                x.Scenes))
+            .ToArray());
+        await sns.NotifySceneRecognised(notification);
 
         Log.AllScenesHaveBeenUpdated(Logger);
     }

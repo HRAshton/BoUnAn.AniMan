@@ -7,4 +7,6 @@ internal interface ISnsNotificationService
     Task NotifyVideoRegisteredAsync();
 
     Task NotifyVideoDownloaded(VideoDownloadedNotification notification);
+
+    Task NotifySceneRecognised(SceneRecognisedNotification notification);
 }

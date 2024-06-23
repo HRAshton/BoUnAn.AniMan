@@ -37,6 +37,7 @@ public class AniManCdkStack : Stack
         var (table, dwnSecondaryIndex, matcherSecondaryIndex) = CreateFilesTable();
         var videoRegisteredTopic = CreateVideoRegisteredTopic();
         var videoDownloadedTopic = CreateVideoDownloadedTopic();
+        var sceneRecognisedTopic = CreateSceneRecognisedTopic();
 
         var logGroup = CreateLogGroup();
         SetErrorAlarm(config, logGroup);
@@ -48,6 +49,7 @@ public class AniManCdkStack : Stack
             matcherSecondaryIndex.IndexName,
             videoRegisteredTopic,
             videoDownloadedTopic,
+            sceneRecognisedTopic,
             logGroup);
 
         CreateWarmer(config, functions[LambdaHandler.GetAnime]);
@@ -55,17 +57,18 @@ public class AniManCdkStack : Stack
         Out("Config", JsonConvert.SerializeObject(config));
         Out("VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn);
         Out("VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn);
+        Out("SceneRecognisedTopicArn", sceneRecognisedTopic.TopicArn);
         Out("FilesTableName", table.TableName);
         functions.ToList().ForEach(kv => Out($"{kv.Key}LambdaName", kv.Value.FunctionName));
 
-        Out("DownloaderConfig", JsonConvert.SerializeObject(new
+        Out("DownloaderConfig", new
         {
             config.AlertEmail,
             GetVideoToDownloadLambdaFunctionName = functions[LambdaHandler.GetVideoToDownload].FunctionName,
             UpdateVideoStatusLambdaFunctionName = functions[LambdaHandler.UpdateVideoStatus].FunctionName,
             VideoRegisteredTopicArn = videoRegisteredTopic.TopicArn,
-        }));
-        Out("BotConfig", JsonConvert.SerializeObject(new
+        });
+        Out("BotConfig", new
         {
             config.AlertEmail,
             config.LoanApiToken,
@@ -75,15 +78,21 @@ public class AniManCdkStack : Stack
             TelegramBotVideoChatId = 0,
             TelegramBotForwardingChatId = 0,
             WarmupTimeoutMinutes = 5
-        }));
-        Out("MatcherConfig", JsonConvert.SerializeObject(new
+        });
+        Out("MatcherConfig", new
         {
             config.AlertEmail,
             config.LoanApiToken,
             GetSeriesToMatchLambdaName = functions[LambdaHandler.GetSeriesToMatch].FunctionName,
             UpdateVideoScenesLambdaName = functions[LambdaHandler.UpdateVideoScenes].FunctionName,
             VideoRegisteredTopicArn = videoRegisteredTopic.TopicArn,
-        }));
+        });
+        Out("PublisherConfig", new
+        {
+            alertEmail = config.AlertEmail,
+            videoDownloadedTopicArn = videoDownloadedTopic.TopicArn,
+            sceneRecognisedTopicArn = sceneRecognisedTopic.TopicArn,
+        });
     }
 
     private (ITable, IGlobalSecondaryIndexProps, IGlobalSecondaryIndexProps) CreateFilesTable()
@@ -146,6 +155,11 @@ public class AniManCdkStack : Stack
         return new Topic(this, "VideoDownloadedSnsTopic");
     }
 
+    private ITopic CreateSceneRecognisedTopic()
+    {
+        return new Topic(this, "SceneRecognisedSnsTopic");
+    }
+
     private ILogGroup CreateLogGroup()
     {
         return new LogGroup(this, "LogGroup", new LogGroupProps
@@ -185,6 +199,7 @@ public class AniManCdkStack : Stack
         string matcherSecondaryIndexName,
         ITopic videoRegisteredTopic,
         ITopic videoDownloadedTopic,
+        ITopic sceneRecognisedTopic,
         ILogGroup logGroup)
     {
         var asset = Code.FromAsset("src", new AssetOptions
@@ -223,6 +238,7 @@ public class AniManCdkStack : Stack
                         { "Storage__MatcherSecondaryIndexName", matcherSecondaryIndexName },
                         { "Notifications__VideoRegisteredTopicArn", videoRegisteredTopic.TopicArn },
                         { "Notifications__VideoDownloadedTopicArn", videoDownloadedTopic.TopicArn },
+                        { "Notifications__SceneRecognisedTopicArn", sceneRecognisedTopic.TopicArn },
                     }
                 }));
 
@@ -236,6 +252,10 @@ public class AniManCdkStack : Stack
 
         var updateVideoStatusLambda = functions[LambdaHandler.UpdateVideoStatus];
         videoDownloadedTopic.GrantPublish(updateVideoStatusLambda);
+        sceneRecognisedTopic.GrantPublish(updateVideoStatusLambda);
+
+        var updateVideoScenesLambda = functions[LambdaHandler.UpdateVideoScenes];
+        sceneRecognisedTopic.GrantPublish(updateVideoScenesLambda);
 
         return functions;
     }
@@ -253,6 +273,11 @@ public class AniManCdkStack : Stack
     private void Out(string key, string value)
     {
         _ = new CfnOutput(this, key, new CfnOutputProps { Value = value });
+    }
+
+    private void Out(string key, object value)
+    {
+        Out(key, JsonConvert.SerializeObject(value));
     }
 
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
