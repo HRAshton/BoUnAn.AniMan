@@ -13,12 +13,14 @@ using Newtonsoft.Json;
 var lambdaHandlers = new LambdaHandlers();
 var context = new TestLambdaContext();
 BotResponse response;
-DwnQueueResponse videoToDownload;
-DwnResultNotification notification;
+DwnResponse videoToDownload;
+DwnResultRequest request;
 
-if (false)
+if (true)
 {
-    await lambdaHandlers.GetSeriesToMatchAsync(context);
+    await lambdaHandlers.GetAnimeAsync(
+        new BotRequest(11757, "AniLibria.TV", 1, 0),
+        context);
     return;
 }
 
@@ -54,8 +56,8 @@ Assert(videoToDownload.VideoKey is not null, "5. Get the video to download");
 
 // 6. Response from the downloader that the video is downloaded
 // Should update the status to Downloaded, attach the fileId, and notify the Bot
-notification = new DwnResultNotification(10686, "AniDUB", 0, 100);
-await lambdaHandlers.UpdateVideoStatusAsync(notification, context);
+request = new DwnResultRequest(10686, "AniDUB", 0, 100);
+await lambdaHandlers.UpdateVideoStatusAsync(request, context);
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(10686, "AniDUB", 0, 2000000000000003), context);
 Console.WriteLine(response);
 Assert(response.Status == VideoStatus.Downloaded, "6. Response from the downloader");
@@ -70,7 +72,7 @@ Assert(response is { Status: VideoStatus.Downloaded, MessageId: 100 }, "7. Reque
 // Should update the status to Failed and notify the Bot
 await lambdaHandlers.GetAnimeAsync(new BotRequest(37786, "AniDUB", 1, 2000000000000003), context);
 await lambdaHandlers.GetAnimeAsync(new BotRequest(37786, "AniDUB", 1, 2000000000000004), context);
-await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultNotification(37786, "AniDUB", 1, null), context);
+await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultRequest(37786, "AniDUB", 1, null), context);
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(37786, "AniDUB", 1, 2000000000000003), context);
 Console.WriteLine(response);
 Assert(response.Status == VideoStatus.Failed, "8. Response from the downloader that the video failed to download");
@@ -84,8 +86,8 @@ Assert(response.Status == VideoStatus.Failed, "9. Request anime that exists and 
 // 10. Response from the downloader that the video failed to download, but with no attached users
 // Should update the status to Failed and should not notify the Bot
 await lambdaHandlers.GetAnimeAsync(new BotRequest(1, "AniDUB", 1, 2000000000000003), context);
-await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultNotification(37786, "AniDUB", 1, 100), context);
-await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultNotification(37786, "AniDUB", 1, null), context);
+await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultRequest(37786, "AniDUB", 1, 100), context);
+await lambdaHandlers.UpdateVideoStatusAsync(new DwnResultRequest(37786, "AniDUB", 1, null), context);
 response = await lambdaHandlers.GetAnimeAsync(new BotRequest(37786, "AniDUB", 1, 2000000000000003), context);
 Console.WriteLine(response);
 Assert(
@@ -107,9 +109,9 @@ Assert(matcherResponse.VideosToMatch.Count > 0, "12. Get anime as Matcher");
 // 13. Response from the matcher that the video is matched
 // Attach the scenes to the video
 await lambdaHandlers.UpdateVideoScenesAsync(
-    new VideoScenesResponse(
+    new MatcherResultRequest(
     [
-        new VideoScenesResponseItem(
+        new MatcherResultRequestItem(
             new VideoKey(10686, "AniDUB", 0),
             new Scenes
             {

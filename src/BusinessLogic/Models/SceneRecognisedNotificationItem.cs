@@ -1,4 +1,5 @@
 using Bounan.Common.Models;
+using Bounan.Common.Models.Notifications;
 
 namespace Bounan.AniMan.BusinessLogic.Models;
 

@@ -14,13 +14,13 @@ internal partial class MatcherHandlingService
         public static partial void CollectedVideosToMatch(ILogger logger, int count, string result);
 
         [LoggerMessage(LogLevel.Information, "Received response from Matcher: {@notification}")]
-        public static partial void ReceivedScenesResponse(ILogger logger, VideoScenesResponse notification);
+        public static partial void ReceivedScenesResponse(ILogger logger, MatcherResultRequest notification);
 
         [LoggerMessage(LogLevel.Information, "Scenes have not been updated")]
         public static partial void ScenesHaveNotBeenUpdated(ILogger logger);
 
         [LoggerMessage(LogLevel.Debug, "Scenes have been updated: {@scenes}")]
-        public static partial void ScenesHaveBeenUpdated(ILogger logger, VideoScenesResponseItem scenes);
+        public static partial void ScenesHaveBeenUpdated(ILogger logger, MatcherResultRequestItem scenes);
 
         [LoggerMessage(LogLevel.Information, "All scenes have been updated")]
         public static partial void AllScenesHaveBeenUpdated(ILogger logger);
@@ -28,7 +28,7 @@ internal partial class MatcherHandlingService
         [LoggerMessage(LogLevel.Error, "Failed to update scenes for {videoKey}: {exception}")]
         public static partial void FailedToUpdateScenes(
             ILogger logger,
-            VideoScenesResponseItem videoKey,
+            MatcherResultRequestItem videoKey,
             NullReferenceException exception);
     }
 }

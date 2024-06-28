@@ -1,6 +1,6 @@
-﻿using Bounan.Common.Models;
+﻿using Bounan.Common.Models.DirectInteraction.Matcher;
 
 namespace Bounan.AniMan.BusinessLogic.Models;
 
-public record VideoScenesResponse(ICollection<VideoScenesResponseItem> Items)
-    : IVideoScenesResponse<VideoScenesResponseItem>;
+public record MatcherResultRequest(ICollection<MatcherResultRequestItem> Items)
+    : IMatcherResultRequest<MatcherResultRequestItem>;

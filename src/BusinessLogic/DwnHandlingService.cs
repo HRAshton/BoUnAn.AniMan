@@ -18,32 +18,32 @@ internal partial class DwnHandlingService(
 
     private ISnsNotificationService SnsNotificationService { get; } = snsNotificationService;
 
-    public async Task<DwnQueueResponse> GetVideoToDownloadAsync()
+    public async Task<DwnResponse> GetVideoToDownloadAsync()
     {
         var file = await FilesRepository.PopSignedLinkToDownloadAsync();
-        return new DwnQueueResponse(file);
+        return new DwnResponse(file);
     }
 
-    public async Task UpdateVideoStatusAsync(DwnResultNotification notification)
+    public async Task UpdateVideoStatusAsync(DwnResultRequest request)
     {
-        var key = new VideoKey(notification.MyAnimeListId, notification.Dub, notification.Episode);
+        var key = new VideoKey(request.MyAnimeListId, request.Dub, request.Episode);
         var video = await FilesRepository.GetAnimeAsync(key);
         ArgumentNullException.ThrowIfNull(video);
         Log.VideoRetrieved(Logger, video);
 
-        if (notification.MessageId is null)
+        if (request.MessageId is null)
         {
             await FilesRepository.MarkAsFailedAsync(video);
             Log.MarkedAsFailed(Logger, video);
         }
         else
         {
-            await FilesRepository.MarkAsDownloadedAsync(video, notification.MessageId.Value);
+            await FilesRepository.MarkAsDownloadedAsync(video, request.MessageId.Value);
             Log.MarkedAsDownloaded(Logger, video);
         }
 
         var usersToNotify = video.Subscribers;
-        await NotifySnsAsync(video, usersToNotify, notification.MessageId, video.Scenes);
+        await NotifySnsAsync(video, usersToNotify, request.MessageId, video.Scenes);
     }
 
     private async Task NotifySnsAsync(

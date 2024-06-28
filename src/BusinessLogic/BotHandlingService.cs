@@ -4,6 +4,7 @@ using Bounan.AniMan.Dal.Entities;
 using Bounan.AniMan.Dal.Repositories;
 using Bounan.Common.Enums;
 using Bounan.Common.Models;
+using Bounan.Common.Models.DirectInteraction.Bot;
 using Bounan.LoanApi.Interfaces;
 using Microsoft.Extensions.Logging;
 

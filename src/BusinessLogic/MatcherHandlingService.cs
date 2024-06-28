@@ -3,6 +3,7 @@ using Bounan.AniMan.BusinessLogic.Interfaces;
 using Bounan.AniMan.BusinessLogic.Models;
 using Bounan.AniMan.Dal.Repositories;
 using Bounan.Common.Models;
+using Bounan.Common.Models.DirectInteraction.Matcher;
 using Microsoft.Extensions.Logging;
 
 namespace Bounan.AniMan.BusinessLogic;
@@ -32,7 +33,7 @@ internal partial class MatcherHandlingService(
         return result;
     }
 
-    public async Task UpdateVideoScenesAsync(VideoScenesResponse response)
+    public async Task UpdateVideoScenesAsync(MatcherResultRequest response)
     {
         Log.ReceivedScenesResponse(Logger, response);
         foreach (var item in response.Items)

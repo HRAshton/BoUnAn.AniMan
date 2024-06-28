@@ -2,7 +2,7 @@ using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Core;
 using Bounan.AniMan.BusinessLogic.Interfaces;
 using Bounan.AniMan.BusinessLogic.Models;
-using Bounan.Common.Models;
+using Bounan.Common.Models.DirectInteraction.Matcher;
 using Microsoft.Extensions.DependencyInjection;
 
 [assembly: LambdaGlobalProperties(GenerateMain = true)]
@@ -29,17 +29,17 @@ public class LambdaHandlers
     }
 
     [LambdaFunction]
-    public Task<DwnQueueResponse> GetVideoToDownloadAsync(ILambdaContext context)
+    public Task<DwnResponse> GetVideoToDownloadAsync(ILambdaContext context)
     {
         var dwnHandlingService = ServiceProvider.GetRequiredService<IDwnHandlingService>();
         return dwnHandlingService.GetVideoToDownloadAsync();
     }
 
     [LambdaFunction]
-    public Task UpdateVideoStatusAsync(DwnResultNotification notification, ILambdaContext context)
+    public Task UpdateVideoStatusAsync(DwnResultRequest request, ILambdaContext context)
     {
         var dwnHandlingService = ServiceProvider.GetRequiredService<IDwnHandlingService>();
-        return dwnHandlingService.UpdateVideoStatusAsync(notification);
+        return dwnHandlingService.UpdateVideoStatusAsync(request);
     }
 
     [LambdaFunction]
@@ -50,7 +50,7 @@ public class LambdaHandlers
     }
 
     [LambdaFunction]
-    public Task UpdateVideoScenesAsync(VideoScenesResponse response, ILambdaContext context)
+    public Task UpdateVideoScenesAsync(MatcherResultRequest response, ILambdaContext context)
     {
         var matcherHandlingService = ServiceProvider.GetRequiredService<IMatcherHandlingService>();
         return matcherHandlingService.UpdateVideoScenesAsync(response);
