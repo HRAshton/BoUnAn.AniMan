@@ -1,0 +1,15 @@
+{
+  "name": "lambda",
+  "scripts": {
+    "run-local": "tsx local-runner.ts",
+    "lint": "eslint . --ext .ts"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.133",
+    "esbuild": "^0.20.0",
+    "tsx": "^4.15.7",
+    "aws-lambda": "^1.0.7",
+    "telegram-bot-api-lightweight-client": "^7.5.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "bounan-animan",
+  "version": "1.0",
+  "description": "",
+  "keywords": [],
+  "author": {
+    "name": "HRAshton"
+  },
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@aws-sdk/client-sns": "^3.606.0",
+    "@aws-sdk/lib-dynamodb": "^3.598.0",
+    "@hey-api/openapi-ts": "^0.48.0",
+    "@types/aws-lambda": "^8.10.140",
+    "@types/node": "^18",
+    "@types/unzipper": "^0.10.9",
+    "@typescript-eslint/eslint-plugin": "^6",
+    "@typescript-eslint/parser": "^6",
+    "aws-cdk-lib": "^2.146.0",
+    "cdk-lambda-llrt": "^0.0.11",
+    "constructs": "^10.0.5",
+    "esbuild": "^0.20.2",
+    "eslint": "^8",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "@aws-sdk/client-dynamodb": "^3.598.0"
+  }
+}

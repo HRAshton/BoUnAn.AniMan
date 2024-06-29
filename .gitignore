@@ -1,8 +1,4 @@
-bin/
-obj/
-/packages/
-riderModule.iml
-/_ReSharper.Caches/
-cdk.out/
-.idea/
-serverless.template
+cdk.out
+.tmp
+.idea
+node_modules
