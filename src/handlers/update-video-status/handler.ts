@@ -1,7 +1,7 @@
 ﻿import { DownloaderResultRequest } from '../../common/ts/interfaces';
 import { retry } from '../../shared/helpers/retry';
 import { Handler } from 'aws-lambda/handler';
-import { markVideoDownloaded, markVideoFailed } from './repository';
+import { clearSubscribers, getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
 import { sendVideoDownloadedNotification } from './sns-client';
 
 
@@ -14,7 +14,21 @@ const process = async (request: DownloaderResultRequest): Promise<void> => {
         await markVideoFailed(request.VideoKey);
     }
 
-    await sendVideoDownloadedNotification(request);
+    const videoInfo = await getAnimeForNotification(request.VideoKey);
+
+    if (videoInfo?.Subscribers?.size) {
+        console.log('Subscribers: ' + JSON.stringify(videoInfo.Subscribers));
+        await clearSubscribers(request.VideoKey);
+    }
+
+    const notification = {
+        VideoKey: request.VideoKey,
+        MessageId: request.MessageId,
+        SubscriberChatIds: videoInfo?.Subscribers ? [...videoInfo.Subscribers] : [],
+        Scenes: videoInfo?.Scenes,
+    };
+
+    await sendVideoDownloadedNotification(notification);
     console.log('Video downloaded notification sent.');
 }
 
