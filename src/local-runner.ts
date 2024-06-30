@@ -12,9 +12,11 @@ const main = async () => {
     const episode = 2;
 
     const s1 = await getAnime({
-        MyAnimeListId: myAnimeListId,
-        Dub: dub,
-        Episode: episode,
+        VideoKey: {
+            MyAnimeListId: myAnimeListId,
+            Dub: dub,
+            Episode: episode,
+        },
         ChatId: 32,
     }, null as any, null as any);
     console.log(s1);
@@ -28,9 +30,11 @@ const main = async () => {
     const s4 = await updateVideoScenes({
         Items: [
             {
-                MyAnimeListId: myAnimeListId,
-                Dub: dub,
-                Episode: episode,
+                VideoKey: {
+                    MyAnimeListId: myAnimeListId,
+                    Dub: dub,
+                    Episode: episode,
+                },
                 Scenes: {
                     Opening: {
                         Start: 0,
@@ -47,10 +51,12 @@ const main = async () => {
     console.log(s4);
 
     const s5 = await updateVideoStatus({
+        VideoKey: {
+            MyAnimeListId: myAnimeListId,
+            Dub: dub,
+            Episode: episode,
+        },
         MessageId: 1,
-        MyAnimeListId: myAnimeListId,
-        Dub: dub,
-        Episode: episode,
     }, null as any, null as any);
     console.log(s5);
 }

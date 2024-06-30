@@ -1,6 +1,6 @@
 ﻿import { BatchWriteCommand, GetCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { VideoEntity } from '../../models/video-entity';
-import { VideoKey } from '../../common/ts-generated';
+import { VideoKey } from '../../common/ts/interfaces';
 import { config } from '../../config/config';
 import { docClient, getTableKey } from '../../shared/repository';
 import { VideoStatusNum } from '../../models/video-status-num';

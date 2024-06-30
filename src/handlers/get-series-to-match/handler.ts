@@ -1,4 +1,4 @@
-﻿import { MatcherResponse } from '../../common/ts-generated';
+﻿import { MatcherResponse } from '../../common/ts/interfaces';
 import { retry } from '../../shared/helpers/retry';
 import { Handler } from 'aws-lambda/handler';
 import { getEpisodesToMatch } from './repository';

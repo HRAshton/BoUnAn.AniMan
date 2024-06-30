@@ -1,6 +1,6 @@
 ﻿import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { VideoKey } from '../common/ts-generated';
+import { VideoKey } from '../common/ts/interfaces';
 
 const dynamoDbClient = new DynamoDBClient();
 

@@ -6,8 +6,8 @@ import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as cw from 'aws-cdk-lib/aws-cloudwatch';
-import * as cloudwatchActions from "aws-cdk-lib/aws-cloudwatch-actions";
-import { LlrtFunction } from "cdk-lambda-llrt";
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import { LlrtFunction } from 'cdk-lambda-llrt';
 
 import { config } from './config';
 
@@ -15,7 +15,7 @@ export class AniManCdkStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        const { table, dwnSecondaryIndex, matcherSecondaryIndex } = this.createFilesTable();
+        const { table, animeKeySecondaryIndex, dwnSecondaryIndex, matcherSecondaryIndex } = this.createFilesTable();
         const videoRegisteredTopic = this.createVideoRegisteredTopic();
         const videoDownloadedTopic = this.createVideoDownloadedTopic();
         const sceneRecognisedTopic = this.createSceneRecognisedTopic();
@@ -25,6 +25,7 @@ export class AniManCdkStack extends Stack {
 
         const functions = this.createLambdas(
             table,
+            animeKeySecondaryIndex.indexName,
             dwnSecondaryIndex.indexName,
             matcherSecondaryIndex.indexName,
             videoRegisteredTopic,
@@ -78,7 +79,7 @@ export class AniManCdkStack extends Stack {
         animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
         dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
         matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps
-    } {
+        } {
         const filesTable = new dynamodb.Table(this, 'FilesTable', {
             partitionKey: { name: 'PrimaryKey', type: dynamodb.AttributeType.STRING },
             removalPolicy: RemovalPolicy.RETAIN,
@@ -156,6 +157,7 @@ export class AniManCdkStack extends Stack {
 
     private createLambdas(
         filesTable: dynamodb.Table,
+        animeKeySecondaryIndexName: string,
         dwnSecondaryIndexName: string,
         matcherSecondaryIndexName: string,
         videoRegisteredTopic: sns.ITopic,
@@ -173,6 +175,7 @@ export class AniManCdkStack extends Stack {
                     LOAN_API_TOKEN: config.loanApiToken,
                     LOAN_API_MAX_CONCURRENT_REQUESTS: '6',
                     DATABASE_TABLE_NAME: filesTable.tableName,
+                    DATABASE_ANIMEKEY_INDEX_NAME: animeKeySecondaryIndexName,
                     DATABASE_SECONDARY_INDEX_NAME: dwnSecondaryIndexName,
                     DATABASE_MATCHER_SECONDARY_INDEX_NAME: matcherSecondaryIndexName,
                     VIDEO_REGISTERED_TOPIC_ARN: videoRegisteredTopic.topicArn,

@@ -1,4 +1,4 @@
-﻿import { MatcherResultRequest } from '../../common/ts-generated';
+﻿import { MatcherResultRequest } from '../../common/ts/interfaces';
 import { retry } from '../../shared/helpers/retry';
 import { Handler } from 'aws-lambda/handler';
 import { updateVideoScenes } from './repository';

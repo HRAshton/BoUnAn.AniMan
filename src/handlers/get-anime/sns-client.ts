@@ -1,5 +1,5 @@
 ﻿import { config } from '../../config/config';
-import { VideoKey } from '../../common/ts-generated';
+import { VideoKey } from '../../common/ts/interfaces';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 
 export const sendVideoRegisteredNotification = async (items: VideoKey[]): Promise<void> => {

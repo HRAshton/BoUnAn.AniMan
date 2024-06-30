@@ -1,7 +1,7 @@
 ﻿import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { config } from '../../config/config';
 import { docClient, getTableKey } from '../../shared/repository';
-import { VideoKey } from '../../common/ts-generated';
+import { VideoKey } from '../../common/ts/interfaces';
 import { VideoStatusNum } from '../../models/video-status-num';
 
 export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {

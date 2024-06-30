@@ -1,4 +1,4 @@
-﻿import { VideoStatus as VideoStatusStr } from '../../common/ts-generated';
+﻿import { VideoStatus as VideoStatusStr } from '../../common/ts/interfaces';
 import { VideoStatusNum } from '../../models/video-status-num';
 
 export const videoStatusToStr = (status: VideoStatusNum): VideoStatusStr => {

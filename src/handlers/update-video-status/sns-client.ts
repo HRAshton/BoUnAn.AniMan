@@ -1,5 +1,5 @@
 ﻿import { config } from '../../config/config';
-import { VideoDownloadedNotification } from '../../common/ts-generated';
+import { VideoDownloadedNotification } from '../../common/ts/interfaces';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 
 export const sendVideoDownloadedNotification = async (notification: VideoDownloadedNotification): Promise<void> => {

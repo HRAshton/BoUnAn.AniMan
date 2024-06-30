@@ -1,4 +1,4 @@
-﻿import { DownloaderResponse } from '../../common/ts-generated';
+﻿import { DownloaderResponse } from '../../common/ts/interfaces';
 import { retry } from '../../shared/helpers/retry';
 import { Handler } from 'aws-lambda/handler';
 import { getEpisodeToDownloadAndLock } from './repository';

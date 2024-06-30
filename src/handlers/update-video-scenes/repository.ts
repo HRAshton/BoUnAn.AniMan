@@ -1,7 +1,7 @@
 ﻿import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { config } from '../../config/config';
 import { docClient, getTableKey } from '../../shared/repository';
-import { MatcherResultRequest } from '../../common/ts-generated';
+import { MatcherResultRequest } from '../../common/ts/interfaces';
 import { VideoEntity } from '../../models/video-entity';
 
 export const updateVideoScenes = async (request: MatcherResultRequest): Promise<void> => {
@@ -25,7 +25,7 @@ export const updateVideoScenes = async (request: MatcherResultRequest): Promise<
         return new UpdateCommand({
             TableName: config.database.tableName,
             Key: {
-                PrimaryKey: getTableKey(item),
+                PrimaryKey: getTableKey(item.VideoKey),
             },
             UpdateExpression: 'SET Scenes = :scenes, UpdatedAt = :updatedAt',
             ExpressionAttributeValues: {
