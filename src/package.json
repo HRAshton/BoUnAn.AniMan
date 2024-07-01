@@ -2,7 +2,8 @@
   "name": "lambda",
   "scripts": {
     "run-local": "tsx local-runner.ts",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "ts": "tsc --noEmit handlers/get-anime/handler.ts handlers/get-series-to-match/handler.ts handlers/get-video-to-download/handler.ts handlers/update-video-scenes/handler.ts handlers/update-video-status/handler.ts"
   },
   "type": "module",
   "devDependencies": {
