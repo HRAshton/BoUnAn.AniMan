@@ -27,7 +27,7 @@ export const updateVideoScenes = async (request: MatcherResultRequest): Promise<
             Key: {
                 PrimaryKey: getTableKey(item.VideoKey),
             },
-            UpdateExpression: 'SET Scenes = :scenes, UpdatedAt = :updatedAt',
+            UpdateExpression: 'SET Scenes = :scenes, UpdatedAt = :updatedAt REMOVE MatchingGroup',
             ExpressionAttributeValues: {
                 ':scenes': scenes,
                 ':updatedAt': updatedAt,

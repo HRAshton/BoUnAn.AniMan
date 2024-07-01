@@ -11,7 +11,7 @@ const getAnimeKey = (myAnimeListId: number, dub: string): string => {
 
 const getSortKey = (status: VideoStatusNum, hasSubscriber: boolean, createdAt: string): string | undefined => {
     return status === VideoStatusNum.Pending
-        ? `${hasSubscriber ? '1' : '0'}#${createdAt}`
+        ? `${hasSubscriber ? '0' : '1'}#${createdAt}`
         : undefined;
 }
 
