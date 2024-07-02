@@ -9,9 +9,14 @@ const getAnimeKey = (myAnimeListId: number, dub: string): string => {
     return `${myAnimeListId}#${dub}`;
 }
 
-const getSortKey = (status: VideoStatusNum, hasSubscriber: boolean, createdAt: string): string | undefined => {
+const getSortKey = (
+    status: VideoStatusNum,
+    hasSubscriber: boolean,
+    createdAt: string,
+    episode: number,
+): string | undefined => {
     return status === VideoStatusNum.Pending
-        ? `${hasSubscriber ? '0' : '1'}#${createdAt}`
+        ? `${hasSubscriber ? '0' : '1'}#${createdAt}#${episode.toString().padStart(4, '0')}`
         : undefined;
 }
 
@@ -48,7 +53,7 @@ export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
     const putCommands = videos.map(video => ({
         PrimaryKey: getTableKey(video),
         AnimeKey: getAnimeKey(video.MyAnimeListId, video.Dub),
-        SortKey: getSortKey(VideoStatusNum.Pending, false, new Date().toISOString()),
+        SortKey: getSortKey(VideoStatusNum.Pending, false, new Date().toISOString(), video.Episode),
         MatchingGroup: getAnimeKey(video.MyAnimeListId, video.Dub),
         MyAnimeListId: video.MyAnimeListId,
         Dub: video.Dub,
@@ -94,7 +99,7 @@ export const attachUserToVideo = async (videoKey: VideoKey, chatId: number): Pro
         ExpressionAttributeValues: {
             ':chatId': new Set([chatId]),
             ':updatedAt': new Date().toISOString(),
-            ':sortKey': getSortKey(VideoStatusNum.Pending, true, new Date().toISOString()),
+            ':sortKey': getSortKey(VideoStatusNum.Pending, true, new Date().toISOString(), videoKey.Episode),
         },
         ReturnValues: 'NONE',
     });
