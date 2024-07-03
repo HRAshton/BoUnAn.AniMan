@@ -5,7 +5,8 @@ import { VideoKey } from '../../common/ts/interfaces';
 import { VideoStatusNum } from '../../models/video-status-num';
 import { VideoEntity } from '../../models/video-entity';
 
-export type GetAnimeForNotificationResult = Pick<VideoEntity, 'Subscribers' | 'Scenes'> | undefined;
+export type GetAnimeForNotificationResult
+    = Pick<VideoEntity, 'Subscribers' | 'Scenes' | 'PublishingDetails'> | undefined;
 
 export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
@@ -51,7 +52,7 @@ export const getAnimeForNotification = async (request: VideoKey): Promise<GetAni
     const command = new GetCommand({
         TableName: config.database.tableName,
         Key: { PrimaryKey: getTableKey(request) },
-        AttributesToGet: ['Subscribers', 'Scenes'] as (keyof VideoEntity)[],
+        AttributesToGet: ['Subscribers', 'Scenes', 'PublishingDetails'] as (keyof VideoEntity)[],
     });
 
     const response = await docClient.send(command);

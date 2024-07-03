@@ -20,17 +20,18 @@ const getSortKey = (
         : undefined;
 }
 
-export type GetAnimeForUserResult = Pick<VideoEntity, 'Status' | 'MessageId' | 'Scenes'> | undefined;
+export type GetAnimeForUserResult
+    = Pick<VideoEntity, 'Status' | 'MessageId' | 'Scenes' | 'PublishingDetails'> | undefined;
 
 export const getAnimeForUser = async (videoKey: VideoKey): Promise<GetAnimeForUserResult> => {
     const command = new GetCommand({
         TableName: config.database.tableName,
         Key: { PrimaryKey: getTableKey(videoKey) },
-        AttributesToGet: ['Status', 'MessageId', 'Scenes'] as (keyof VideoEntity)[],
+        AttributesToGet: ['Status', 'MessageId', 'Scenes', 'PublishingDetails'] as (keyof VideoEntity)[],
     });
 
     const response = await docClient.send(command);
-    return response.Item as (Pick<VideoEntity, 'Status' | 'MessageId' | 'Scenes'> | undefined);
+    return response.Item as (Pick<VideoEntity, 'Status' | 'MessageId' | 'Scenes' | 'PublishingDetails'> | undefined);
 }
 
 export const getRegisteredEpisodes = async (myAnimeListId: number, dub: string): Promise<number[]> => {

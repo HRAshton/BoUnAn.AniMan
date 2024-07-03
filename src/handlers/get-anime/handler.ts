@@ -51,6 +51,7 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
                 Status: videoStatusToStr(video.Status),
                 MessageId: video.MessageId,
                 Scenes: video.Scenes,
+                PublishingDetails: video.PublishingDetails,
             };
             console.log('Returning video as is: ' + JSON.stringify(response));
             return response;
@@ -64,6 +65,7 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
                 Status: videoStatusToStr(video.Status),
                 MessageId: undefined,
                 Scenes: undefined,
+                PublishingDetails: undefined,
             };
         }
 
@@ -74,6 +76,7 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
                 Status: videoStatusToStr(status),
                 MessageId: undefined,
                 Scenes: undefined,
+                PublishingDetails: undefined,
             };
         }
 

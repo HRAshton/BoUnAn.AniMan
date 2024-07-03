@@ -30,4 +30,9 @@ export interface VideoEntity {
             End: number;
         };
     };
+
+    PublishingDetails?: {
+        ThreadId: number;
+        MessageId: number;
+    };
 }
