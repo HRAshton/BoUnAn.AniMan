@@ -69,6 +69,7 @@ export class AniManCdkStack extends Stack {
 
         this.out('PublisherConfig', {
             alertEmail: config.alertEmail,
+            updatePublishingDetailsFunctionName: functions.get(LambdaHandler.UpdatePublishingDetails)!.functionName,
             videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
             sceneRecognisedTopicArn: sceneRecognisedTopic.topicArn,
         });
@@ -209,4 +210,5 @@ enum LambdaHandler {
     UpdateVideoStatus = 'update-video-status',
     GetSeriesToMatch = 'get-series-to-match',
     UpdateVideoScenes = 'update-video-scenes',
+    UpdatePublishingDetails = 'update-publishing-details',
 }
