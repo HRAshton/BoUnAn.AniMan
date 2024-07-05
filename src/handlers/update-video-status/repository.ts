@@ -27,6 +27,7 @@ export const markVideoDownloaded = async (request: VideoKey, messageId: number):
             Status: VideoStatusNum.Downloaded,
             MessageId: messageId,
             UpdatedAt: new Date().toISOString(),
+            SortKey: undefined,
         },
     }));
     console.log('Put result: ' + JSON.stringify(putResult));
