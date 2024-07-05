@@ -24,7 +24,7 @@ const process = async (request: DownloaderResultRequest): Promise<void> => {
     const notification = {
         VideoKey: request.VideoKey,
         MessageId: request.MessageId,
-        SubscriberChatIds: videoInfo?.Subscribers ? [...videoInfo.Subscribers] : [],
+        SubscriberChatIds: videoInfo?.Subscribers ? Array.from(videoInfo.Subscribers) : [],
         Scenes: videoInfo?.Scenes,
     };
 
