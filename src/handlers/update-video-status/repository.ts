@@ -1,4 +1,4 @@
-﻿import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+﻿import { DeleteCommand, GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { config } from '../../config/config';
 import { docClient, getTableKey } from '../../shared/repository';
 import { VideoKey } from '../../common/ts/interfaces';
@@ -8,24 +8,28 @@ import { VideoEntity } from '../../models/video-entity';
 export type GetAnimeForNotificationResult = Pick<VideoEntity, 'Subscribers' | 'Scenes'> | undefined;
 
 export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {
-    const result = await docClient.send(new UpdateCommand({
+    const existingVideo = await docClient.send(new GetCommand({
         TableName: config.database.tableName,
-        Key: {
-            PrimaryKey: getTableKey(request),
-        },
-        UpdateExpression: 'SET #status = :status, #messageId = :messageId, #updatedAt = :updatedAt',
-        ExpressionAttributeNames: {
-            '#status': 'Status',
-            '#messageId': 'MessageId',
-            '#updatedAt': 'UpdatedAt',
-        },
-        ExpressionAttributeValues: {
-            ':status': VideoStatusNum.Downloaded,
-            ':messageId': messageId,
-            ':updatedAt': new Date().toISOString(),
+        Key: { PrimaryKey: getTableKey(request) },
+    }));
+    console.log('Existing video: ' + JSON.stringify(existingVideo));
+
+    const deleteResult = await docClient.send(new DeleteCommand({
+        TableName: config.database.tableName,
+        Key: { PrimaryKey: getTableKey(request) },
+    }));
+    console.log('Delete result: ' + JSON.stringify(deleteResult));
+
+    const putResult = await docClient.send(new PutCommand({
+        TableName: config.database.tableName,
+        Item: {
+            ...existingVideo.Item,
+            Status: VideoStatusNum.Downloaded,
+            MessageId: messageId,
+            UpdatedAt: new Date().toISOString(),
         },
     }));
-    console.log('Update result: ' + JSON.stringify(result));
+    console.log('Put result: ' + JSON.stringify(putResult));
 }
 
 export const markVideoFailed = async (request: VideoKey): Promise<void> => {

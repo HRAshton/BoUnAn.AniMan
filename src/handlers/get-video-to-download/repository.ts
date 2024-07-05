@@ -14,6 +14,13 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
         IndexName: config.database.secondaryIndexName,
         Select: 'SPECIFIC_ATTRIBUTES',
         ProjectionExpression: 'PrimaryKey, MyAnimeListId, Dub, Episode',
+        FilterExpression: '#status = :status',
+        ExpressionAttributeNames: {
+            '#status': 'Status',
+        },
+        ExpressionAttributeValues: {
+            ':status': VideoStatusNum.Pending,
+        },
         Limit: 1,
     }));
 
@@ -27,11 +34,10 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
         Key: {
             PrimaryKey: { S: video.PrimaryKey },
         },
-        UpdateExpression: 'SET #status = :newStatus, #updatedAt = :updatedAt REMOVE #sortKey',
+        UpdateExpression: 'SET #status = :newStatus, #updatedAt = :updatedAt',
         ConditionExpression: '#status = :oldStatus',
         ExpressionAttributeNames: {
             '#status': 'Status',
-            '#sortKey': 'SortKey',
             '#updatedAt': 'UpdatedAt',
         },
         ExpressionAttributeValues: {
