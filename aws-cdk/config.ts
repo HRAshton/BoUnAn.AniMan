@@ -1,4 +1,4 @@
-﻿import configFile from './config.json';
+﻿import configFile from './configuration.json';
 
 interface Config {
     alertEmail: string;
