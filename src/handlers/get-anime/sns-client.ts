@@ -1,12 +1,16 @@
 ﻿import { config } from '../../config/config';
-import { VideoKey } from '../../common/ts/interfaces';
+import { VideoKey, VideoRegisteredNotification } from '../../common/ts/interfaces';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 
 export const sendVideoRegisteredNotification = async (items: VideoKey[]): Promise<void> => {
     const snsClient = new SNSClient();
 
+    const obj: VideoRegisteredNotification = {
+        Items: items.map(item => ({ VideoKey: item })),
+    }
+
     const message = {
-        default: JSON.stringify(items),
+        default: JSON.stringify(obj),
     }
 
     const command = new PublishCommand({
@@ -16,5 +20,5 @@ export const sendVideoRegisteredNotification = async (items: VideoKey[]): Promis
     });
 
     await snsClient.send(command);
-    console.log('Notification sent: ' + JSON.stringify(message));
+    console.log('Notification sent: ' + JSON.stringify(command));
 }
