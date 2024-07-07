@@ -76,7 +76,7 @@ export class AniManCdkStack extends Stack {
 
         this.out('OngoingConfig', {
             alertEmail: config.alertEmail,
-            registerVideoFunctionName: functions.get(LambdaHandler.RegisterVideo)!.functionName,
+            registerVideosFunctionName: functions.get(LambdaHandler.RegisterVideos)!.functionName,
             videoRegisteredTopicArn: videoRegisteredTopic.topicArn,
         });
     }
@@ -197,7 +197,7 @@ export class AniManCdkStack extends Stack {
         });
 
         videoRegisteredTopic.grantPublish(functions.get(LambdaHandler.GetAnime)!);
-        videoRegisteredTopic.grantPublish(functions.get(LambdaHandler.RegisterVideo)!);
+        videoRegisteredTopic.grantPublish(functions.get(LambdaHandler.RegisterVideos)!);
         videoDownloadedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
         sceneRecognisedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
         sceneRecognisedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoScenes)!);
@@ -218,5 +218,5 @@ enum LambdaHandler {
     GetSeriesToMatch = 'get-series-to-match',
     UpdateVideoScenes = 'update-video-scenes',
     UpdatePublishingDetails = 'update-publishing-details',
-    RegisterVideo = 'register-video',
+    RegisterVideos = 'register-videos',
 }
