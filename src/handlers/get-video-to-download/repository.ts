@@ -1,8 +1,7 @@
-﻿import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+﻿import { DeleteCommand, GetCommand, PutCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { VideoEntity } from '../../models/video-entity';
 import { config } from '../../config/config';
 import { docClient } from '../../shared/repository';
-import { UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { VideoStatusNum } from '../../models/video-status-num';
 
 type GetEpisodeToDownloadResult = Pick<VideoEntity, 'MyAnimeListId' | 'Dub' | 'Episode'> | undefined;
@@ -13,14 +12,7 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
         TableName: config.database.tableName,
         IndexName: config.database.secondaryIndexName,
         Select: 'SPECIFIC_ATTRIBUTES',
-        ProjectionExpression: 'PrimaryKey, MyAnimeListId, Dub, Episode',
-        FilterExpression: '#status = :status',
-        ExpressionAttributeNames: {
-            '#status': 'Status',
-        },
-        ExpressionAttributeValues: {
-            ':status': VideoStatusNum.Pending,
-        },
+        ProjectionExpression: 'PrimaryKey',
         Limit: 1,
     }));
 
@@ -28,29 +20,38 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
     if (!video) {
         return undefined;
     }
-
-    const lockResult = await docClient.send(new UpdateItemCommand({
+    
+    const videoEntityResult = await docClient.send(new GetCommand({
         TableName: config.database.tableName,
-        Key: {
-            PrimaryKey: { S: video.PrimaryKey },
-        },
-        UpdateExpression: 'SET #status = :newStatus, #updatedAt = :updatedAt',
-        ConditionExpression: '#status = :oldStatus',
-        ExpressionAttributeNames: {
-            '#status': 'Status',
-            '#updatedAt': 'UpdatedAt',
-        },
-        ExpressionAttributeValues: {
-            ':oldStatus': { N: VideoStatusNum.Pending.toString() },
-            ':newStatus': { N: VideoStatusNum.Downloading.toString() },
-            ':updatedAt': { S: new Date().toISOString() },
+        Key: { PrimaryKey: video.PrimaryKey },
+    }));
+    console.log('Get result: ' + JSON.stringify(videoEntityResult));
+    if (!videoEntityResult.Item) {
+        throw new Error('Video not found');
+    }
+
+    const videoEntity = videoEntityResult.Item as VideoEntity;
+
+    const deleteResult = await docClient.send(new DeleteCommand({
+        TableName: config.database.tableName,
+        Key: { PrimaryKey: video.PrimaryKey },
+    }));
+    console.log('Delete result: ' + JSON.stringify(deleteResult));
+
+    const putResult = await docClient.send(new PutCommand({
+        TableName: config.database.tableName,
+        Item: {
+            ...videoEntity,
+            Status: VideoStatusNum.Downloading,
+            UpdatedAt: new Date().toISOString(),
+            SortKey: undefined,
         },
     }));
-    console.log('Lock result: ' + JSON.stringify(lockResult));
+    console.log('Put result: ' + JSON.stringify(putResult));
 
     return {
-        MyAnimeListId: video.MyAnimeListId,
-        Dub: video.Dub,
-        Episode: video.Episode,
+        MyAnimeListId: videoEntity.MyAnimeListId,
+        Dub: videoEntity.Dub,
+        Episode: videoEntity.Episode,
     };
 }

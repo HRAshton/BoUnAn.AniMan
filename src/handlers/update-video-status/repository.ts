@@ -1,4 +1,4 @@
-﻿import { DeleteCommand, GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+﻿import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { config } from '../../config/config';
 import { docClient, getVideoKey } from '../../shared/repository';
 import { VideoKey } from '../../common/ts/interfaces';
@@ -9,29 +9,25 @@ export type GetAnimeForNotificationResult
     = Pick<VideoEntity, 'Subscribers' | 'Scenes' | 'PublishingDetails'> | undefined;
 
 export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {
-    const existingVideo = await docClient.send(new GetCommand({
+    const result = await docClient.send(new UpdateCommand({
         TableName: config.database.tableName,
-        Key: { PrimaryKey: getVideoKey(request) },
-    }));
-    console.log('Existing video: ' + JSON.stringify(existingVideo));
-
-    const deleteResult = await docClient.send(new DeleteCommand({
-        TableName: config.database.tableName,
-        Key: { PrimaryKey: getVideoKey(request) },
-    }));
-    console.log('Delete result: ' + JSON.stringify(deleteResult));
-
-    const putResult = await docClient.send(new PutCommand({
-        TableName: config.database.tableName,
-        Item: {
-            ...existingVideo.Item,
-            Status: VideoStatusNum.Downloaded,
-            MessageId: messageId,
-            UpdatedAt: new Date().toISOString(),
-            SortKey: undefined,
+        Key: {
+            PrimaryKey: getVideoKey(request),
+        },
+        ConditionExpression: 'attribute_exists(PrimaryKey)',
+        UpdateExpression: 'SET #status = :status, #messageId = :messageId, #updatedAt = :updatedAt',
+        ExpressionAttributeNames: {
+            '#status': 'Status',
+            '#messageId': 'MessageId',
+            '#updatedAt': 'UpdatedAt',
+        },
+        ExpressionAttributeValues: {
+            ':status': VideoStatusNum.Downloaded,
+            ':messageId': messageId,
+            ':updatedAt': new Date().toISOString(),
         },
     }));
-    console.log('Put result: ' + JSON.stringify(putResult));
+    console.log('Update result: ' + JSON.stringify(result));
 }
 
 export const markVideoFailed = async (request: VideoKey): Promise<void> => {
@@ -40,6 +36,7 @@ export const markVideoFailed = async (request: VideoKey): Promise<void> => {
         Key: {
             PrimaryKey: getVideoKey(request),
         },
+        ConditionExpression: 'attribute_exists(PrimaryKey)',
         UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
             '#status': 'Status',
