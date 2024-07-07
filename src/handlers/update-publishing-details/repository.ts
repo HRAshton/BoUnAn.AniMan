@@ -1,12 +1,12 @@
 ﻿import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { config } from '../../config/config';
-import { docClient, getTableKey } from '../../shared/repository';
+import { docClient, getVideoKey } from '../../shared/repository';
 import { PublishingDetails, VideoKey } from '../../common/ts/interfaces';
 
 export const savePublishingDetails = async (videoKey: VideoKey, details: PublishingDetails): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
         TableName: config.database.tableName,
-        Key: { PrimaryKey: getTableKey(videoKey) },
+        Key: { PrimaryKey: getVideoKey(videoKey) },
         UpdateExpression: 'SET #publishingDetails = :publishingDetails, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
             '#publishingDetails': 'PublishingDetails',

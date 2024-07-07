@@ -73,6 +73,12 @@ export class AniManCdkStack extends Stack {
             videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
             sceneRecognisedTopicArn: sceneRecognisedTopic.topicArn,
         });
+
+        this.out('OngoingConfig', {
+            alertEmail: config.alertEmail,
+            registerVideoFunctionName: functions.get(LambdaHandler.RegisterVideo)!.functionName,
+            videoRegisteredTopicArn: videoRegisteredTopic.topicArn,
+        });
     }
 
     private createFilesTable(): {
@@ -191,6 +197,7 @@ export class AniManCdkStack extends Stack {
         });
 
         videoRegisteredTopic.grantPublish(functions.get(LambdaHandler.GetAnime)!);
+        videoRegisteredTopic.grantPublish(functions.get(LambdaHandler.RegisterVideo)!);
         videoDownloadedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
         sceneRecognisedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
         sceneRecognisedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoScenes)!);
@@ -211,4 +218,5 @@ enum LambdaHandler {
     GetSeriesToMatch = 'get-series-to-match',
     UpdateVideoScenes = 'update-video-scenes',
     UpdatePublishingDetails = 'update-publishing-details',
+    RegisterVideo = 'register-video',
 }

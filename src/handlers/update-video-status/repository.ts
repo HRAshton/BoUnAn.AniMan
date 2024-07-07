@@ -1,6 +1,6 @@
 ﻿import { DeleteCommand, GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { config } from '../../config/config';
-import { docClient, getTableKey } from '../../shared/repository';
+import { docClient, getVideoKey } from '../../shared/repository';
 import { VideoKey } from '../../common/ts/interfaces';
 import { VideoStatusNum } from '../../models/video-status-num';
 import { VideoEntity } from '../../models/video-entity';
@@ -11,13 +11,13 @@ export type GetAnimeForNotificationResult
 export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {
     const existingVideo = await docClient.send(new GetCommand({
         TableName: config.database.tableName,
-        Key: { PrimaryKey: getTableKey(request) },
+        Key: { PrimaryKey: getVideoKey(request) },
     }));
     console.log('Existing video: ' + JSON.stringify(existingVideo));
 
     const deleteResult = await docClient.send(new DeleteCommand({
         TableName: config.database.tableName,
-        Key: { PrimaryKey: getTableKey(request) },
+        Key: { PrimaryKey: getVideoKey(request) },
     }));
     console.log('Delete result: ' + JSON.stringify(deleteResult));
 
@@ -38,7 +38,7 @@ export const markVideoFailed = async (request: VideoKey): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
         TableName: config.database.tableName,
         Key: {
-            PrimaryKey: getTableKey(request),
+            PrimaryKey: getVideoKey(request),
         },
         UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
@@ -56,7 +56,7 @@ export const markVideoFailed = async (request: VideoKey): Promise<void> => {
 export const getAnimeForNotification = async (request: VideoKey): Promise<GetAnimeForNotificationResult> => {
     const command = new GetCommand({
         TableName: config.database.tableName,
-        Key: { PrimaryKey: getTableKey(request) },
+        Key: { PrimaryKey: getVideoKey(request) },
         AttributesToGet: ['Subscribers', 'Scenes', 'PublishingDetails'] as (keyof VideoEntity)[],
     });
 
@@ -68,7 +68,7 @@ export const clearSubscribers = async (request: VideoKey): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
         TableName: config.database.tableName,
         Key: {
-            PrimaryKey: getTableKey(request),
+            PrimaryKey: getVideoKey(request),
         },
         UpdateExpression: 'REMOVE #subscribers',
         ExpressionAttributeNames: {

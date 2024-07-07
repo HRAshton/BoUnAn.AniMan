@@ -1,24 +1,9 @@
-﻿import { BatchWriteCommand, GetCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+﻿import { GetCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { VideoEntity } from '../../models/video-entity';
 import { VideoKey } from '../../common/ts/interfaces';
 import { config } from '../../config/config';
-import { docClient, getTableKey } from '../../shared/repository';
+import { docClient, getAnimeKey, getDownloaderKey, getVideoKey } from '../../shared/repository';
 import { VideoStatusNum } from '../../models/video-status-num';
-
-const getAnimeKey = (myAnimeListId: number, dub: string): string => {
-    return `${myAnimeListId}#${dub}`;
-}
-
-const getSortKey = (
-    status: VideoStatusNum,
-    hasSubscriber: boolean,
-    createdAt: string,
-    episode: number,
-): string | undefined => {
-    return status === VideoStatusNum.Pending
-        ? `${hasSubscriber ? '0' : '1'}#${createdAt}#${episode.toString().padStart(4, '0')}`
-        : undefined;
-}
 
 export type GetAnimeForUserResult
     = Pick<VideoEntity, 'Status' | 'MessageId' | 'Scenes' | 'PublishingDetails'> | undefined;
@@ -26,7 +11,7 @@ export type GetAnimeForUserResult
 export const getAnimeForUser = async (videoKey: VideoKey): Promise<GetAnimeForUserResult> => {
     const command = new GetCommand({
         TableName: config.database.tableName,
-        Key: { PrimaryKey: getTableKey(videoKey) },
+        Key: { PrimaryKey: getVideoKey(videoKey) },
         AttributesToGet: ['Status', 'MessageId', 'Scenes', 'PublishingDetails'] as (keyof VideoEntity)[],
     });
 
@@ -50,49 +35,10 @@ export const getRegisteredEpisodes = async (myAnimeListId: number, dub: string):
     return response.Items?.map(item => item.Episode) ?? [];
 }
 
-export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
-    const putCommands = videos.map(video => ({
-        PrimaryKey: getTableKey(video),
-        AnimeKey: getAnimeKey(video.MyAnimeListId, video.Dub),
-        SortKey: getSortKey(VideoStatusNum.Pending, false, new Date().toISOString(), video.Episode),
-        MatchingGroup: getAnimeKey(video.MyAnimeListId, video.Dub),
-        MyAnimeListId: video.MyAnimeListId,
-        Dub: video.Dub,
-        Episode: video.Episode,
-        Status: VideoStatusNum.Pending,
-        CreatedAt: new Date().toISOString(),
-        UpdatedAt: new Date().toISOString(),
-    } as VideoEntity));
-
-    const batches = putCommands.reduce((acc, item, index) => {
-        const batchIndex = Math.floor(index / 25);
-        acc[batchIndex] = acc[batchIndex] ?? [];
-        acc[batchIndex].push(item);
-        return acc;
-    }, [] as VideoEntity[][]);
-
-    const commands = batches.map(batch => new BatchWriteCommand({
-        RequestItems: {
-            [config.database.tableName]: batch.map(item => ({
-                PutRequest: {
-                    Item: item,
-                },
-            })),
-        },
-    }));
-
-    for (const command of commands) {
-        const result = await docClient.send(command);
-        console.log('Inserted videos: ' + JSON.stringify(result));
-    }
-
-    console.log('All videos inserted');
-}
-
 export const attachUserToVideo = async (videoKey: VideoKey, chatId: number): Promise<void> => {
     const command = new UpdateCommand({
         TableName: config.database.tableName,
-        Key: { PrimaryKey: getTableKey(videoKey) },
+        Key: { PrimaryKey: getVideoKey(videoKey) },
         UpdateExpression: 'ADD #subscribers :chatId SET UpdatedAt = :updatedAt, SortKey = :sortKey',
         ExpressionAttributeNames: {
             '#subscribers': 'Subscribers',
@@ -100,7 +46,7 @@ export const attachUserToVideo = async (videoKey: VideoKey, chatId: number): Pro
         ExpressionAttributeValues: {
             ':chatId': new Set([chatId]),
             ':updatedAt': new Date().toISOString(),
-            ':sortKey': getSortKey(VideoStatusNum.Pending, true, new Date().toISOString(), videoKey.Episode),
+            ':sortKey': getDownloaderKey(VideoStatusNum.Pending, true, new Date().toISOString(), videoKey.Episode),
         },
         ReturnValues: 'NONE',
     });
