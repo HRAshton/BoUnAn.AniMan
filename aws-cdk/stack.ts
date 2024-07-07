@@ -76,6 +76,7 @@ export class AniManCdkStack extends Stack {
 
         this.out('OngoingConfig', {
             alertEmail: config.alertEmail,
+            loanApiToken: config.loanApiToken,
             registerVideosFunctionName: functions.get(LambdaHandler.RegisterVideos)!.functionName,
             videoRegisteredTopicArn: videoRegisteredTopic.topicArn,
         });
