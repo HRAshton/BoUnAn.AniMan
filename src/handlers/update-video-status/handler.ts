@@ -10,7 +10,7 @@ const process = async (request: DownloaderResultRequest): Promise<void> => {
         console.log('Video downloaded.');
         await markVideoDownloaded(request.VideoKey, request.MessageId);
     } else {
-        console.error('Video download failed.');
+        console.warn('Video download failed.');
         await markVideoFailed(request.VideoKey);
     }
 
