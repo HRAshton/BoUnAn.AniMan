@@ -88,9 +88,15 @@ export class AniManCdkStack extends Stack {
         dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
         matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps
         } {
+        const capacities: Pick<dynamodb.TableProps, 'readCapacity' | 'writeCapacity'> = {
+            readCapacity: 3,
+            writeCapacity: 2,
+        };
+
         const filesTable = new dynamodb.Table(this, 'FilesTable', {
             partitionKey: { name: 'PrimaryKey', type: dynamodb.AttributeType.STRING },
             removalPolicy: RemovalPolicy.RETAIN,
+            ...capacities,
         });
 
         const animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
@@ -99,6 +105,7 @@ export class AniManCdkStack extends Stack {
             sortKey: { name: 'Episode', type: dynamodb.AttributeType.NUMBER },
             projectionType: dynamodb.ProjectionType.INCLUDE,
             nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
+            ...capacities,
         };
 
         const dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
@@ -107,6 +114,7 @@ export class AniManCdkStack extends Stack {
             sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
             nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
+            ...capacities,
         };
 
         const matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
@@ -115,6 +123,7 @@ export class AniManCdkStack extends Stack {
             sortKey: { name: 'CreatedAt', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
             nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
+            ...capacities,
         };
 
         filesTable.addGlobalSecondaryIndex(animeKeySecondaryIndex);
