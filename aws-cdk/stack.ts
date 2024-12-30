@@ -11,9 +11,15 @@ import { LlrtFunction } from 'cdk-lambda-llrt';
 
 import { config } from './config';
 
+const USE_MOCKS = false;
+
 export class AniManCdkStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
+
+        if (USE_MOCKS && this.region !== 'eu-central-1') {
+            throw new Error('Mock handlers can only be used in eu-central-1');
+        }
 
         const { table, animeKeySecondaryIndex, dwnSecondaryIndex, matcherSecondaryIndex } = this.createFilesTable();
         const videoRegisteredTopic = this.createVideoRegisteredTopic();
@@ -87,7 +93,7 @@ export class AniManCdkStack extends Stack {
         animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
         dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
         matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps
-        } {
+    } {
         const capacities: Pick<dynamodb.TableProps, 'readCapacity' | 'writeCapacity'> = {
             readCapacity: 3,
             writeCapacity: 2,
@@ -184,8 +190,12 @@ export class AniManCdkStack extends Stack {
     ): Map<LambdaHandler, lambda.Function> {
         const functions = new Map<LambdaHandler, lambda.Function>();
         Object.entries(LambdaHandler).forEach(([lambdaName, handlerName]) => {
+            const entry = USE_MOCKS
+                ? `src/handlers-mocks/${handlerName}.ts`
+                : `src/handlers/${handlerName}/handler.ts`;
+
             const func = new LlrtFunction(this, lambdaName, {
-                entry: `src/handlers/${handlerName}/handler.ts`,
+                entry,
                 handler: 'handler',
                 logGroup: logGroup,
                 environment: {
