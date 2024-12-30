@@ -57,12 +57,11 @@ export class AniManCdkStack extends Stack {
         this.out('BotConfig', {
             alertEmail: config.alertEmail,
             loanApiToken: config.loanApiToken,
-            GetAnimeFunctionName: functions.get(LambdaHandler.GetAnime)!.functionName,
-            VideoDownloadedTopicArn: videoDownloadedTopic.topicArn,
-            TelegramBotToken: 0,
-            TelegramBotVideoChatId: 0,
-            TelegramBotForwardingChatId: 0,
-            WarmupTimeoutMinutes: 5,
+            getAnimeFunctionName: functions.get(LambdaHandler.GetAnime)!.functionName,
+            videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
+            telegramBotToken: '',
+            telegramBotVideoChatId: 0,
+            telegramBotPublisherGroupName: '',
         });
 
         this.out('MatcherConfig', {
