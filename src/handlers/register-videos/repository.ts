@@ -19,7 +19,7 @@ export const getExistingVideos = async (videoKeys: VideoKey[]): Promise<VideoKey
     for (const chunk of chunks) {
         const command = new BatchGetCommand({
             RequestItems: {
-                [config.database.tableName]: {
+                [config.value.database.tableName]: {
                     Keys: chunk,
                     AttributesToGet: [TABLE_PRIMARY_KEY],
                 },
@@ -27,7 +27,7 @@ export const getExistingVideos = async (videoKeys: VideoKey[]): Promise<VideoKey
         });
 
         const response = await docClient.send(command);
-        const chunkResult = response.Responses?.[config.database.tableName] ?? [];
+        const chunkResult = response.Responses?.[config.value.database.tableName] ?? [];
         const foundKeys = chunkResult.map(x => x[TABLE_PRIMARY_KEY]);
         console.log('Found keys: ' + JSON.stringify(foundKeys));
 

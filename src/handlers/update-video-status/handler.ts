@@ -3,6 +3,7 @@ import { retry } from '../../shared/helpers/retry';
 import { Handler } from 'aws-lambda/handler';
 import { clearSubscribers, getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
 import { sendVideoDownloadedNotification } from './sns-client';
+import { initConfig } from '../../config/config';
 
 
 const process = async (request: DownloaderResultRequest): Promise<void> => {
@@ -33,5 +34,6 @@ const process = async (request: DownloaderResultRequest): Promise<void> => {
 }
 
 export const handler: Handler<DownloaderResultRequest, void> = async (request) => {
+    await initConfig();
     return retry(async () => await process(request), 3, () => true);
 };

@@ -5,7 +5,7 @@ import { PublishingDetails, VideoKey } from '../../common/ts/interfaces';
 
 export const savePublishingDetails = async (videoKey: VideoKey, details: PublishingDetails): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: { PrimaryKey: getVideoKey(videoKey) },
         UpdateExpression: 'SET #publishingDetails = :publishingDetails, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {

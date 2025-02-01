@@ -10,7 +10,7 @@ export type GetAnimeForNotificationResult
 
 export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: {
             PrimaryKey: getVideoKey(request),
             SortKey: undefined,
@@ -33,7 +33,7 @@ export const markVideoDownloaded = async (request: VideoKey, messageId: number):
 
 export const markVideoFailed = async (request: VideoKey): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: {
             PrimaryKey: getVideoKey(request),
         },
@@ -53,7 +53,7 @@ export const markVideoFailed = async (request: VideoKey): Promise<void> => {
 
 export const getAnimeForNotification = async (request: VideoKey): Promise<GetAnimeForNotificationResult> => {
     const command = new GetCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: { PrimaryKey: getVideoKey(request) },
         AttributesToGet: ['Subscribers', 'Scenes', 'PublishingDetails'] as (keyof VideoEntity)[],
     });
@@ -64,7 +64,7 @@ export const getAnimeForNotification = async (request: VideoKey): Promise<GetAni
 
 export const clearSubscribers = async (request: VideoKey): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: {
             PrimaryKey: getVideoKey(request),
         },

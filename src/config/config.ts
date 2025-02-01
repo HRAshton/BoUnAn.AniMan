@@ -1,13 +1,4 @@
-﻿// process.env.AWS_PROFILE = '';
-// process.env.LOAN_API_TOKEN = '';
-// process.env.LOAN_API_MAX_CONCURRENT_REQUESTS = '';
-// process.env.DATABASE_TABLE_NAME = '';
-// process.env.DATABASE_ANIMEKEY_INDEX_NAME = '';
-// process.env.DATABASE_SECONDARY_INDEX_NAME = '';
-// process.env.DATABASE_MATCHER_SECONDARY_INDEX_NAME = '';
-// process.env.VIDEO_REGISTERED_TOPIC_ARN = '';
-// process.env.VIDEO_DOWNLOADED_TOPIC_ARN = '';
-// process.env.SCENE_RECOGNISED_TOPIC_ARN = '';
+﻿import { fetchSsmValue } from './ssm-client';
 
 
 interface LoanApiConfig {
@@ -34,30 +25,18 @@ export interface Config {
     topics: Topics;
 }
 
-const getEnv = (key: string): string => {
-    const value = process.env[key];
+let cachedConfig: Config | undefined;
 
-    if (!value) {
-        throw new Error(`Missing environment variable: ${key}`);
-    }
-
-    return value;
+export const initConfig = async (): Promise<void> => {
+    cachedConfig = await fetchSsmValue('/bounan/animan/runtime-config') as Config;
 }
 
-export const config: Config = {
-    loanApiConfig: {
-        token: getEnv('LOAN_API_TOKEN'),
-        maxConcurrentRequests: parseInt(getEnv('LOAN_API_MAX_CONCURRENT_REQUESTS')),
-    },
-    database: {
-        tableName: getEnv('DATABASE_TABLE_NAME'),
-        animeKeyIndexName: getEnv('DATABASE_ANIMEKEY_INDEX_NAME'),
-        secondaryIndexName: getEnv('DATABASE_SECONDARY_INDEX_NAME'),
-        matcherSecondaryIndexName: getEnv('DATABASE_MATCHER_SECONDARY_INDEX_NAME'),
-    },
-    topics: {
-        videoRegisteredTopicArn: getEnv('VIDEO_REGISTERED_TOPIC_ARN'),
-        videoDownloadedTopicArn: getEnv('VIDEO_DOWNLOADED_TOPIC_ARN'),
-        sceneRecognisedTopicArn: getEnv('SCENE_RECOGNISED_TOPIC_ARN'),
+export const config = {
+    get value() {
+        if (!cachedConfig) {
+            throw new Error('Config not initialized');
+        }
+
+        return cachedConfig;
     },
 }

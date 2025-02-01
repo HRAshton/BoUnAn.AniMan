@@ -4,6 +4,7 @@ import { RegisterVideosRequest } from '../../common/ts/interfaces';
 import { retry } from '../../shared/helpers/retry';
 import { sendVideoRegisteredNotification } from './sns-client';
 import { Handler } from 'aws-lambda/handler';
+import { initConfig } from '../../config/config';
 
 const process = async (request: RegisterVideosRequest): Promise<void> => {
     console.log('Processing request: ' + JSON.stringify(request));
@@ -29,6 +30,7 @@ const process = async (request: RegisterVideosRequest): Promise<void> => {
 }
 
 export const handler: Handler<RegisterVideosRequest> = async (request) => {
+    await initConfig();
     if (!request || !request.Items || request.Items.length === 0
         || request.Items.some(x => !x.VideoKey?.MyAnimeListId || !x.VideoKey?.Dub || !x.VideoKey?.Episode)) {
         throw new Error('Invalid request: ' + JSON.stringify(request));

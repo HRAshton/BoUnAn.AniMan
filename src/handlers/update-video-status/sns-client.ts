@@ -10,7 +10,7 @@ export const sendVideoDownloadedNotification = async (notification: VideoDownloa
     }
 
     const command = new PublishCommand({
-        TopicArn: config.topics.videoDownloadedTopicArn,
+        TopicArn: config.value.topics.videoDownloadedTopicArn,
         Message: JSON.stringify(message),
         MessageStructure: 'json',
     });

@@ -51,7 +51,7 @@ export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
 
     const commands = batches.map(batch => new BatchWriteCommand({
         RequestItems: {
-            [config.database.tableName]: batch.map(item => ({
+            [config.value.database.tableName]: batch.map(item => ({
                 PutRequest: {
                     Item: item, // TODO: PK check?
                 },

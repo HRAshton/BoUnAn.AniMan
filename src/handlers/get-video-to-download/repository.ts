@@ -9,8 +9,8 @@ type GetEpisodeToDownloadResult = Pick<VideoEntity, 'MyAnimeListId' | 'Dub' | 'E
 // Get first matching group and all its video keys
 export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloadResult> => {
     const videoToDownload = await docClient.send(new ScanCommand({
-        TableName: config.database.tableName,
-        IndexName: config.database.secondaryIndexName,
+        TableName: config.value.database.tableName,
+        IndexName: config.value.database.secondaryIndexName,
         Select: 'SPECIFIC_ATTRIBUTES',
         ProjectionExpression: 'PrimaryKey',
         Limit: 1,
@@ -22,7 +22,7 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
     }
 
     const videoEntityResult = await docClient.send(new GetCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: { PrimaryKey: video.PrimaryKey },
     }));
     console.log('Get result: ' + JSON.stringify(videoEntityResult));
@@ -33,13 +33,13 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
     const videoEntity = videoEntityResult.Item as VideoEntity;
 
     const deleteResult = await docClient.send(new DeleteCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: { PrimaryKey: video.PrimaryKey },
     }));
     console.log('Delete result: ' + JSON.stringify(deleteResult));
 
     const putResult = await docClient.send(new PutCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Item: {
             ...videoEntity,
             Status: VideoStatusNum.Downloading,

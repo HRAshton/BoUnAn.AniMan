@@ -8,8 +8,8 @@ type GetEpisodesToMatchResult = Pick<VideoEntity, 'MyAnimeListId' | 'Dub' | 'Epi
 // Get first matching group and all its video keys
 export const getEpisodesToMatch = async (): Promise<GetEpisodesToMatchResult> => {
     const groupResponse = await docClient.send(new ScanCommand({
-        TableName: config.database.tableName,
-        IndexName: config.database.matcherSecondaryIndexName,
+        TableName: config.value.database.tableName,
+        IndexName: config.value.database.matcherSecondaryIndexName,
         Select: 'ALL_PROJECTED_ATTRIBUTES',
         Limit: 1,
     }));
@@ -20,8 +20,8 @@ export const getEpisodesToMatch = async (): Promise<GetEpisodesToMatchResult> =>
 
     const group = groupResponse.Items[0].MatchingGroup;
     const videoResponse = await docClient.send(new ScanCommand({
-        TableName: config.database.tableName,
-        IndexName: config.database.matcherSecondaryIndexName,
+        TableName: config.value.database.tableName,
+        IndexName: config.value.database.matcherSecondaryIndexName,
         FilterExpression: 'MatchingGroup = :group',
         ExpressionAttributeValues: {
             ':group': group,

@@ -10,7 +10,7 @@ export type GetAnimeForUserResult
 
 export const getAnimeForUser = async (videoKey: VideoKey): Promise<GetAnimeForUserResult> => {
     const command = new GetCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: { PrimaryKey: getVideoKey(videoKey) },
         AttributesToGet: ['Status', 'MessageId', 'Scenes', 'PublishingDetails'] as (keyof VideoEntity)[],
     });
@@ -21,8 +21,8 @@ export const getAnimeForUser = async (videoKey: VideoKey): Promise<GetAnimeForUs
 
 export const getRegisteredEpisodes = async (myAnimeListId: number, dub: string): Promise<number[]> => {
     const command = new ScanCommand({
-        TableName: config.database.tableName,
-        IndexName: config.database.animeKeyIndexName,
+        TableName: config.value.database.tableName,
+        IndexName: config.value.database.animeKeyIndexName,
         Select: 'SPECIFIC_ATTRIBUTES',
         ProjectionExpression: 'Episode',
         FilterExpression: 'AnimeKey = :animeKey',
@@ -37,7 +37,7 @@ export const getRegisteredEpisodes = async (myAnimeListId: number, dub: string):
 
 export const attachUserToVideo = async (videoKey: VideoKey, chatId: number): Promise<void> => {
     const command = new UpdateCommand({
-        TableName: config.database.tableName,
+        TableName: config.value.database.tableName,
         Key: { PrimaryKey: getVideoKey(videoKey) },
         UpdateExpression: 'ADD #subscribers :chatId SET UpdatedAt = :updatedAt, SortKey = :sortKey',
         ExpressionAttributeNames: {

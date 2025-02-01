@@ -14,7 +14,7 @@ export const sendVideoRegisteredNotification = async (items: VideoKey[]): Promis
     }
 
     const command = new PublishCommand({
-        TopicArn: config.topics.videoRegisteredTopicArn,
+        TopicArn: config.value.topics.videoRegisteredTopicArn,
         Message: JSON.stringify(message),
         MessageStructure: 'json',
     });

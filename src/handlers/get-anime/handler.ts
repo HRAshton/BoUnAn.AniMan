@@ -6,10 +6,8 @@ import { VideoStatusNum } from '../../models/video-status-num';
 import { videoStatusToStr } from '../../shared/helpers/video-status-to-str';
 import { sendVideoRegisteredNotification } from './sns-client';
 import { Handler } from 'aws-lambda/handler';
-import { config } from '../../config/config';
+import { config, initConfig } from '../../config/config';
 import { getExistingVideos, setToken } from '../../loan-api/src/animan-loan-api-client';
-
-setToken(config.loanApiConfig.token);
 
 const addAnime = async (request: BotRequest): Promise<VideoStatusNum> => {
     const videoKey = request.VideoKey;
@@ -87,6 +85,9 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
 }
 
 export const handler: Handler<BotRequest, BotResponse> = async (request) => {
+    await initConfig();
+    setToken(config.value.loanApiConfig.token);
+
     if (!request.VideoKey.MyAnimeListId || !request.VideoKey.Dub
         || request.VideoKey.Episode === null || !request.ChatId) {
         throw new Error('Invalid request: ' + JSON.stringify(request));

@@ -23,7 +23,7 @@ export const updateVideoScenes = async (request: MatcherResultRequest): Promise<
         }
 
         return new UpdateCommand({
-            TableName: config.database.tableName,
+            TableName: config.value.database.tableName,
             Key: {
                 PrimaryKey: getVideoKey(item.VideoKey),
             },

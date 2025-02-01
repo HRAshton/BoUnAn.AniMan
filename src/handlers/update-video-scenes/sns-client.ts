@@ -12,7 +12,7 @@ export const sendSceneRecognizedNotification = async (items: SceneRecognisedNoti
     }
 
     const command = new PublishCommand({
-        TopicArn: config.topics.sceneRecognisedTopicArn,
+        TopicArn: config.value.topics.sceneRecognisedTopicArn,
         Message: JSON.stringify(message),
         MessageStructure: 'json',
     });

@@ -3,6 +3,7 @@ import { retry } from '../../shared/helpers/retry';
 import { Handler } from 'aws-lambda/handler';
 import { updateVideoScenes } from './repository';
 import { sendSceneRecognizedNotification } from './sns-client';
+import { initConfig } from '../../config/config';
 
 
 const process = async (request: MatcherResultRequest): Promise<void> => {
@@ -14,5 +15,6 @@ const process = async (request: MatcherResultRequest): Promise<void> => {
 }
 
 export const handler: Handler<MatcherResultRequest, void> = async (request) => {
+    await initConfig();
     return retry(async () => await process(request), 3, () => true);
 };
