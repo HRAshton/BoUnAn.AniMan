@@ -13,6 +13,7 @@ export const markVideoDownloaded = async (request: VideoKey, messageId: number):
         TableName: config.database.tableName,
         Key: {
             PrimaryKey: getVideoKey(request),
+            SortKey: undefined,
         },
         ConditionExpression: 'attribute_exists(PrimaryKey)',
         UpdateExpression: 'SET #status = :status, #messageId = :messageId, #updatedAt = :updatedAt',
