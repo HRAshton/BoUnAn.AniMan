@@ -4,6 +4,8 @@ import { Handler } from 'aws-lambda/handler';
 // The mock handler is a simplified version of the handler that can be used for debugging.
 
 export const handler: Handler<BotRequest, BotResponse> = async (request) => {
+    console.log(request);
+
     if (!request.VideoKey.MyAnimeListId || !request.VideoKey.Dub
         || request.VideoKey.Episode === null || !request.ChatId) {
         throw new Error('Invalid request: ' + JSON.stringify(request));

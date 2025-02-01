@@ -91,7 +91,8 @@ export class AniManCdkStack extends Stack {
         table: dynamodb.Table,
         animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
         dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
-        matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps
+        matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
+        // eslint-disable-next-line indent
     } {
         const capacities: Pick<dynamodb.TableProps, 'readCapacity' | 'writeCapacity'> = {
             readCapacity: 3,
