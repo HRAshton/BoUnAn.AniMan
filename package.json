@@ -7,7 +7,8 @@
     "ts": "tsc",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "depcheck": "depcheck"
+    "depcheck": "depcheck",
+    "prerelease": "npm run depcheck && npm run lint && npm run ts"
   },
   "keywords": [],
   "author": {
