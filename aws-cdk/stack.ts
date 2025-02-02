@@ -1,6 +1,6 @@
-﻿import { Stack, StackProps, Duration, CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+﻿import { Construct } from 'constructs';
 import { LlrtFunction } from 'cdk-lambda-llrt';
+import * as cfn from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
@@ -16,8 +16,8 @@ import { ExportNames } from '../src/common/ts/cdk/export-names';
 
 const USE_MOCKS = false;
 
-export class AniManCdkStack extends Stack {
-    constructor(scope: Construct, id: string, props?: StackProps) {
+export class AniManCdkStack extends cfn.Stack {
+    constructor(scope: Construct, id: string, props?: cfn.StackProps) {
         super(scope, id, props);
 
         if (USE_MOCKS && !this.isStage) {
@@ -33,6 +33,7 @@ export class AniManCdkStack extends Stack {
         const functions = this.createLambdas(table, topics, logGroup, parameter);
         this.setErrorAlarm(logGroup, config);
 
+        this.out('Config', config);
         this.export({
             AlertEmail: config.alertEmail,
             LoanApiToken: config.loanApiToken,
@@ -68,7 +69,7 @@ export class AniManCdkStack extends Stack {
 
         const filesTable = new dynamodb.Table(this, 'FilesTable', {
             partitionKey: { name: 'PrimaryKey', type: dynamodb.AttributeType.STRING },
-            removalPolicy: RemovalPolicy.RETAIN,
+            removalPolicy: cfn.RemovalPolicy.RETAIN,
             deletionProtection: !this.isStage,
             ...capacities,
         });
@@ -197,7 +198,7 @@ export class AniManCdkStack extends Stack {
                 entry,
                 handler: 'handler',
                 logGroup,
-                timeout: Duration.seconds(30),
+                timeout: cfn.Duration.seconds(30),
             });
 
             filesTable.grantReadWriteData(func);
@@ -214,9 +215,14 @@ export class AniManCdkStack extends Stack {
         return functions;
     }
 
+    private out(key: string, value: object | string): void {
+        const output = typeof value === 'string' ? value : JSON.stringify(value);
+        new cfn.CfnOutput(this, key, { value: output });
+    }
+
     private export(exports: { [key in keyof typeof ExportNames]: string }): void {
         Object.entries(ExportNames).forEach(([key, value]) => {
-            new CfnOutput(this, value, {
+            new cfn.CfnOutput(this, value, {
                 value: exports[key as keyof typeof ExportNames],
                 exportName: `bounan:${value}`,
             });
