@@ -1,5 +1,6 @@
 ﻿import { Stack, StackProps, Duration, CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { LlrtFunction } from 'cdk-lambda-llrt';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
@@ -8,10 +9,10 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as cw from 'aws-cdk-lib/aws-cloudwatch';
 import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
-import { LlrtFunction } from 'cdk-lambda-llrt';
 
 import { Config, getConfig } from './config';
 import { Config as RuntimeConfig } from '../src/config/config';
+import { ExportNames } from '../src/common/ts/cdk/export-names';
 
 const USE_MOCKS = false;
 
@@ -32,49 +33,20 @@ export class AniManCdkStack extends Stack {
         const functions = this.createLambdas(table, topics, logGroup, parameter);
         this.setErrorAlarm(logGroup, config);
 
-        this.out('Config', JSON.stringify(config));
-        this.out('FilesTableName', table.tableName);
-        topics.forEach((topic, key) => this.out(`TopicArn-${key}`, topic.topicArn));
-        functions.forEach((func, key) => this.out(`LambdaName-${key}`, func.functionName));
-
-        // this.out('DownloaderConfig', {
-        //     alertEmail: config.alertEmail,
-        //     GetVideoToDownloadLambdaFunctionName: functions.get(LambdaHandler.GetVideoToDownload)!.functionName,
-        //     UpdateVideoStatusLambdaFunctionName: functions.get(LambdaHandler.UpdateVideoStatus)!.functionName,
-        //     VideoRegisteredTopicArn: videoRegisteredTopic.topicArn,
-        // });
-        //
-        // this.out('BotConfig', {
-        //     alertEmail: config.alertEmail,
-        //     loanApiToken: config.loanApiToken,
-        //     getAnimeFunctionName: functions.get(LambdaHandler.GetAnime)!.functionName,
-        //     videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
-        //     telegramBotToken: '',
-        //     telegramBotVideoChatId: 0,
-        //     telegramBotPublisherGroupName: '',
-        // });
-        //
-        // this.out('MatcherConfig', {
-        //     alertEmail: config.alertEmail,
-        //     loanApiToken: config.loanApiToken,
-        //     GetSeriesToMatchLambdaName: functions.get(LambdaHandler.GetSeriesToMatch)!.functionName,
-        //     UpdateVideoScenesLambdaName: functions.get(LambdaHandler.UpdateVideoScenes)!.functionName,
-        //     VideoRegisteredTopicArn: videoRegisteredTopic.topicArn,
-        // });
-        //
-        // this.out('PublisherConfig', {
-        //     alertEmail: config.alertEmail,
-        //     updatePublishingDetailsFunctionName: functions.get(LambdaHandler.UpdatePublishingDetails)!.functionName,
-        //     videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
-        //     sceneRecognisedTopicArn: sceneRecognisedTopic.topicArn,
-        // });
-        //
-        // this.out('OngoingConfig', {
-        //     alertEmail: config.alertEmail,
-        //     loanApiToken: config.loanApiToken,
-        //     registerVideosFunctionName: functions.get(LambdaHandler.RegisterVideos)!.functionName,
-        //     videoRegisteredTopicArn: videoRegisteredTopic.topicArn,
-        // });
+        this.export({
+            AlertEmail: config.alertEmail,
+            LoanApiToken: config.loanApiToken,
+            VideoRegisteredSnsTopicArn: topics.get(RequiredTopic.VideoRegistered)!.topicArn,
+            VideoDownloadedSnsTopicArn: topics.get(RequiredTopic.VideoDownloaded)!.topicArn,
+            SceneRecognisedSnsTopicArn: topics.get(RequiredTopic.SceneRecognised)!.topicArn,
+            GetAnimeFunctionName: functions.get(LambdaHandler.GetAnime)!.functionName,
+            GetVideoToDownloadFunctionName: functions.get(LambdaHandler.GetVideoToDownload)!.functionName,
+            UpdateVideoStatusFunctionName: functions.get(LambdaHandler.UpdateVideoStatus)!.functionName,
+            GetSeriesToMatchFunctionName: functions.get(LambdaHandler.GetSeriesToMatch)!.functionName,
+            UpdateVideoScenesFunctionName: functions.get(LambdaHandler.UpdateVideoScenes)!.functionName,
+            UpdatePublishingDetailsFunctionName: functions.get(LambdaHandler.UpdatePublishingDetails)!.functionName,
+            RegisterVideosFunctionName: functions.get(LambdaHandler.RegisterVideos)!.functionName,
+        });
     }
 
     private get isStage(): boolean {
@@ -239,9 +211,13 @@ export class AniManCdkStack extends Stack {
         return functions;
     }
 
-    private out(key: string, value: object | string): void {
-        const output = typeof value === 'string' ? value : JSON.stringify(value);
-        new CfnOutput(this, key, { value: output });
+    private export(exports: { [key in keyof typeof ExportNames]: string }): void {
+        Object.entries(ExportNames).forEach(([key, value]) => {
+            new CfnOutput(this, value, {
+                value: exports[key as keyof typeof ExportNames],
+                exportName: `bounan:${value}`,
+            });
+        });
     }
 }
 
