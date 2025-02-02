@@ -2,6 +2,7 @@
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sns from 'aws-cdk-lib/aws-sns';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -9,7 +10,8 @@ import * as cw from 'aws-cdk-lib/aws-cloudwatch';
 import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import { LlrtFunction } from 'cdk-lambda-llrt';
 
-import { config } from './config';
+import { Config, getConfig } from './config';
+import { Config as RuntimeConfig } from '../src/config/config';
 
 const USE_MOCKS = false;
 
@@ -21,77 +23,63 @@ export class AniManCdkStack extends Stack {
             throw new Error('Mock handlers can only be used in eu-central-1');
         }
 
-        const { table, animeKeySecondaryIndex, dwnSecondaryIndex, matcherSecondaryIndex } = this.createFilesTable();
-        const videoRegisteredTopic = this.createVideoRegisteredTopic();
-        const videoDownloadedTopic = this.createVideoDownloadedTopic();
-        const sceneRecognisedTopic = this.createSceneRecognisedTopic();
+        const config = getConfig(this, '/bounan/animan/deploy-config');
+
+        const { table, indexes } = this.createFilesTable();
+        const topics = this.createSnsTopics();
         const logGroup = this.createLogGroup();
-
-        this.setErrorAlarm(logGroup);
-
-        const functions = this.createLambdas(
-            table,
-            animeKeySecondaryIndex.indexName,
-            dwnSecondaryIndex.indexName,
-            matcherSecondaryIndex.indexName,
-            videoRegisteredTopic,
-            videoDownloadedTopic,
-            sceneRecognisedTopic,
-            logGroup,
-        );
+        const parameter = this.saveParameters(table, indexes, topics, config);
+        const functions = this.createLambdas(table, topics, logGroup, parameter);
+        this.setErrorAlarm(logGroup, config);
 
         this.out('Config', JSON.stringify(config));
-        this.out('VideoRegisteredTopicArn', videoRegisteredTopic.topicArn);
-        this.out('VideoDownloadedTopicArn', videoDownloadedTopic.topicArn);
-        this.out('SceneRecognisedTopicArn', sceneRecognisedTopic.topicArn);
         this.out('FilesTableName', table.tableName);
-        functions.forEach((func, key) => this.out(`${key}-LambdaName`, func.functionName));
+        topics.forEach((topic, key) => this.out(`TopicArn-${key}`, topic.topicArn));
+        functions.forEach((func, key) => this.out(`LambdaName-${key}`, func.functionName));
 
-        this.out('DownloaderConfig', {
-            alertEmail: config.alertEmail,
-            GetVideoToDownloadLambdaFunctionName: functions.get(LambdaHandler.GetVideoToDownload)!.functionName,
-            UpdateVideoStatusLambdaFunctionName: functions.get(LambdaHandler.UpdateVideoStatus)!.functionName,
-            VideoRegisteredTopicArn: videoRegisteredTopic.topicArn,
-        });
-
-        this.out('BotConfig', {
-            alertEmail: config.alertEmail,
-            loanApiToken: config.loanApiToken,
-            getAnimeFunctionName: functions.get(LambdaHandler.GetAnime)!.functionName,
-            videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
-            telegramBotToken: '',
-            telegramBotVideoChatId: 0,
-            telegramBotPublisherGroupName: '',
-        });
-
-        this.out('MatcherConfig', {
-            alertEmail: config.alertEmail,
-            loanApiToken: config.loanApiToken,
-            GetSeriesToMatchLambdaName: functions.get(LambdaHandler.GetSeriesToMatch)!.functionName,
-            UpdateVideoScenesLambdaName: functions.get(LambdaHandler.UpdateVideoScenes)!.functionName,
-            VideoRegisteredTopicArn: videoRegisteredTopic.topicArn,
-        });
-
-        this.out('PublisherConfig', {
-            alertEmail: config.alertEmail,
-            updatePublishingDetailsFunctionName: functions.get(LambdaHandler.UpdatePublishingDetails)!.functionName,
-            videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
-            sceneRecognisedTopicArn: sceneRecognisedTopic.topicArn,
-        });
-
-        this.out('OngoingConfig', {
-            alertEmail: config.alertEmail,
-            loanApiToken: config.loanApiToken,
-            registerVideosFunctionName: functions.get(LambdaHandler.RegisterVideos)!.functionName,
-            videoRegisteredTopicArn: videoRegisteredTopic.topicArn,
-        });
+        // this.out('DownloaderConfig', {
+        //     alertEmail: config.alertEmail,
+        //     GetVideoToDownloadLambdaFunctionName: functions.get(LambdaHandler.GetVideoToDownload)!.functionName,
+        //     UpdateVideoStatusLambdaFunctionName: functions.get(LambdaHandler.UpdateVideoStatus)!.functionName,
+        //     VideoRegisteredTopicArn: videoRegisteredTopic.topicArn,
+        // });
+        //
+        // this.out('BotConfig', {
+        //     alertEmail: config.alertEmail,
+        //     loanApiToken: config.loanApiToken,
+        //     getAnimeFunctionName: functions.get(LambdaHandler.GetAnime)!.functionName,
+        //     videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
+        //     telegramBotToken: '',
+        //     telegramBotVideoChatId: 0,
+        //     telegramBotPublisherGroupName: '',
+        // });
+        //
+        // this.out('MatcherConfig', {
+        //     alertEmail: config.alertEmail,
+        //     loanApiToken: config.loanApiToken,
+        //     GetSeriesToMatchLambdaName: functions.get(LambdaHandler.GetSeriesToMatch)!.functionName,
+        //     UpdateVideoScenesLambdaName: functions.get(LambdaHandler.UpdateVideoScenes)!.functionName,
+        //     VideoRegisteredTopicArn: videoRegisteredTopic.topicArn,
+        // });
+        //
+        // this.out('PublisherConfig', {
+        //     alertEmail: config.alertEmail,
+        //     updatePublishingDetailsFunctionName: functions.get(LambdaHandler.UpdatePublishingDetails)!.functionName,
+        //     videoDownloadedTopicArn: videoDownloadedTopic.topicArn,
+        //     sceneRecognisedTopicArn: sceneRecognisedTopic.topicArn,
+        // });
+        //
+        // this.out('OngoingConfig', {
+        //     alertEmail: config.alertEmail,
+        //     loanApiToken: config.loanApiToken,
+        //     registerVideosFunctionName: functions.get(LambdaHandler.RegisterVideos)!.functionName,
+        //     videoRegisteredTopicArn: videoRegisteredTopic.topicArn,
+        // });
     }
 
     private createFilesTable(): {
         table: dynamodb.Table,
-        animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
-        dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
-        matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps,
+        indexes: Map<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
         // eslint-disable-next-line indent
     } {
         const capacities: Pick<dynamodb.TableProps, 'readCapacity' | 'writeCapacity'> = {
@@ -106,7 +94,7 @@ export class AniManCdkStack extends Stack {
         });
 
         const animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
-            indexName: 'AnimeKey-Episode-index',
+            indexName: RequiredIndex.VideoKey,
             partitionKey: { name: 'AnimeKey', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'Episode', type: dynamodb.AttributeType.NUMBER },
             projectionType: dynamodb.ProjectionType.INCLUDE,
@@ -115,7 +103,7 @@ export class AniManCdkStack extends Stack {
         };
 
         const dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
-            indexName: 'Status-SortKey-index',
+            indexName: RequiredIndex.DownloadStatusKey,
             partitionKey: { name: 'Status', type: dynamodb.AttributeType.NUMBER },
             sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
@@ -124,7 +112,7 @@ export class AniManCdkStack extends Stack {
         };
 
         const matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
-            indexName: 'Matcher-CreatedAt-index',
+            indexName: RequiredIndex.MatcherStatusKey,
             partitionKey: { name: 'MatchingGroup', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'CreatedAt', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
@@ -136,19 +124,23 @@ export class AniManCdkStack extends Stack {
         filesTable.addGlobalSecondaryIndex(dwnSecondaryIndex);
         filesTable.addGlobalSecondaryIndex(matcherSecondaryIndex);
 
-        return { table: filesTable, animeKeySecondaryIndex, dwnSecondaryIndex, matcherSecondaryIndex };
+        return {
+            table: filesTable,
+            indexes: new Map<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>([
+                [RequiredIndex.VideoKey, animeKeySecondaryIndex],
+                [RequiredIndex.DownloadStatusKey, dwnSecondaryIndex],
+                [RequiredIndex.MatcherStatusKey, matcherSecondaryIndex],
+            ]),
+        };
     }
 
-    private createVideoRegisteredTopic(): sns.Topic {
-        return new sns.Topic(this, 'VideoRegisteredSnsTopic');
-    }
+    private createSnsTopics(): Map<RequiredTopic, sns.Topic> {
+        const result = new Map<RequiredTopic, sns.Topic>();
+        Object.values(RequiredTopic).forEach((topic) => {
+            result.set(topic, new sns.Topic(this, topic));
+        });
 
-    private createVideoDownloadedTopic(): sns.Topic {
-        return new sns.Topic(this, 'VideoDownloadedSnsTopic');
-    }
-
-    private createSceneRecognisedTopic(): sns.Topic {
-        return new sns.Topic(this, 'SceneRecognisedSnsTopic');
+        return result;
     }
 
     private createLogGroup(): logs.LogGroup {
@@ -157,7 +149,7 @@ export class AniManCdkStack extends Stack {
         });
     }
 
-    private setErrorAlarm(logGroup: logs.LogGroup): void {
+    private setErrorAlarm(logGroup: logs.LogGroup, config: Config): void {
         const topic = new sns.Topic(this, 'LogGroupAlarmSnsTopic');
         topic.addSubscription(new subs.EmailSubscription(config.alertEmail));
 
@@ -178,15 +170,41 @@ export class AniManCdkStack extends Stack {
         alarm.addAlarmAction(new cloudwatchActions.SnsAction(topic));
     }
 
+    private saveParameters(
+        filesTable: dynamodb.Table,
+        indexes: Map<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
+        topics: Map<RequiredTopic, sns.Topic>,
+        config: Config,
+    ): ssm.IStringParameter {
+        const value = {
+            loanApiConfig: {
+                token: config.loanApiToken,
+                maxConcurrentRequests: 6,
+            },
+            database: {
+                tableName: filesTable.tableName,
+                animeKeyIndexName: indexes.get(RequiredIndex.VideoKey)!.indexName,
+                secondaryIndexName: indexes.get(RequiredIndex.DownloadStatusKey)!.indexName,
+                matcherSecondaryIndexName: indexes.get(RequiredIndex.MatcherStatusKey)!.indexName,
+            },
+            topics: {
+                videoRegisteredTopicArn: topics.get(RequiredTopic.VideoRegistered)!.topicArn,
+                videoDownloadedTopicArn: topics.get(RequiredTopic.VideoDownloaded)!.topicArn,
+                sceneRecognisedTopicArn: topics.get(RequiredTopic.SceneRecognised)!.topicArn,
+            },
+        } as Required<RuntimeConfig>;
+
+        return new ssm.StringParameter(this, '/bounan/animan/runtime-config', {
+            parameterName: '/bounan/animan/runtime-config',
+            stringValue: JSON.stringify(value, null, 2),
+        });
+    }
+
     private createLambdas(
         filesTable: dynamodb.Table,
-        animeKeySecondaryIndexName: string,
-        dwnSecondaryIndexName: string,
-        matcherSecondaryIndexName: string,
-        videoRegisteredTopic: sns.ITopic,
-        videoDownloadedTopic: sns.ITopic,
-        sceneRecognisedTopic: sns.ITopic,
+        topics: Map<RequiredTopic, sns.Topic>,
         logGroup: logs.LogGroup,
+        parameter: ssm.IStringParameter,
     ): Map<LambdaHandler, lambda.Function> {
         const functions = new Map<LambdaHandler, lambda.Function>();
         Object.entries(LambdaHandler).forEach(([lambdaName, handlerName]) => {
@@ -198,29 +216,19 @@ export class AniManCdkStack extends Stack {
                 entry,
                 handler: 'handler',
                 logGroup: logGroup,
-                environment: {
-                    LOAN_API_TOKEN: config.loanApiToken,
-                    LOAN_API_MAX_CONCURRENT_REQUESTS: '6',
-                    DATABASE_TABLE_NAME: filesTable.tableName,
-                    DATABASE_ANIMEKEY_INDEX_NAME: animeKeySecondaryIndexName,
-                    DATABASE_SECONDARY_INDEX_NAME: dwnSecondaryIndexName,
-                    DATABASE_MATCHER_SECONDARY_INDEX_NAME: matcherSecondaryIndexName,
-                    VIDEO_REGISTERED_TOPIC_ARN: videoRegisteredTopic.topicArn,
-                    VIDEO_DOWNLOADED_TOPIC_ARN: videoDownloadedTopic.topicArn,
-                    SCENE_RECOGNISED_TOPIC_ARN: sceneRecognisedTopic.topicArn,
-                },
                 timeout: Duration.seconds(30),
             });
 
             filesTable.grantReadWriteData(func);
+            parameter.grantRead(func);
             functions.set(handlerName, func);
         });
 
-        videoRegisteredTopic.grantPublish(functions.get(LambdaHandler.GetAnime)!);
-        videoRegisteredTopic.grantPublish(functions.get(LambdaHandler.RegisterVideos)!);
-        videoDownloadedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
-        sceneRecognisedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
-        sceneRecognisedTopic.grantPublish(functions.get(LambdaHandler.UpdateVideoScenes)!);
+        topics.get(RequiredTopic.VideoRegistered)!.grantPublish(functions.get(LambdaHandler.GetAnime)!);
+        topics.get(RequiredTopic.VideoRegistered)!.grantPublish(functions.get(LambdaHandler.RegisterVideos)!);
+        topics.get(RequiredTopic.VideoDownloaded)!.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
+        topics.get(RequiredTopic.SceneRecognised)!.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
+        topics.get(RequiredTopic.SceneRecognised)!.grantPublish(functions.get(LambdaHandler.UpdateVideoScenes)!);
 
         return functions;
     }
@@ -231,6 +239,7 @@ export class AniManCdkStack extends Stack {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 enum LambdaHandler {
     GetAnime = 'get-anime',
     GetVideoToDownload = 'get-video-to-download',
@@ -239,4 +248,16 @@ enum LambdaHandler {
     UpdateVideoScenes = 'update-video-scenes',
     UpdatePublishingDetails = 'update-publishing-details',
     RegisterVideos = 'register-videos',
+}
+
+enum RequiredTopic {
+    VideoRegistered = 'VideoRegisteredSnsTopic',
+    VideoDownloaded = 'VideoDownloadedSnsTopic',
+    SceneRecognised = 'SceneRecognisedSnsTopic',
+}
+
+enum RequiredIndex {
+    VideoKey = 'AnimeKey-Episode-index',
+    DownloadStatusKey = 'Status-SortKey-index',
+    MatcherStatusKey = 'Matcher-CreatedAt-index',
 }
