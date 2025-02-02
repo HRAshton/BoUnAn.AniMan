@@ -20,7 +20,7 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
     if (!video) {
         return undefined;
     }
-
+    
     const videoEntityResult = await docClient.send(new GetCommand({
         TableName: config.value.database.tableName,
         Key: { PrimaryKey: video.PrimaryKey },
@@ -44,6 +44,7 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
             ...videoEntity,
             Status: VideoStatusNum.Downloading,
             UpdatedAt: new Date().toISOString(),
+            SortKey: undefined,
         },
     }));
     console.log('Put result: ' + JSON.stringify(putResult));
