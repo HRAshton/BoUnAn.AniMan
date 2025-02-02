@@ -19,7 +19,7 @@ export class AniManCdkStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        if (USE_MOCKS && this.region !== 'eu-central-1') {
+        if (USE_MOCKS && !this.isStage) {
             throw new Error('Mock handlers can only be used in eu-central-1');
         }
 
@@ -77,19 +77,25 @@ export class AniManCdkStack extends Stack {
         // });
     }
 
+    private get isStage(): boolean {
+        return this.region === 'eu-central-1';
+    }
+
     private createFilesTable(): {
         table: dynamodb.Table,
         indexes: Map<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
         // eslint-disable-next-line indent
     } {
-        const capacities: Pick<dynamodb.TableProps, 'readCapacity' | 'writeCapacity'> = {
-            readCapacity: 3,
-            writeCapacity: 2,
+        const capacities: Partial<dynamodb.TableProps> = {
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            maxReadRequestUnits: 3,
+            maxWriteRequestUnits: 2,
         };
 
         const filesTable = new dynamodb.Table(this, 'FilesTable', {
             partitionKey: { name: 'PrimaryKey', type: dynamodb.AttributeType.STRING },
             removalPolicy: RemovalPolicy.RETAIN,
+            deletionProtection: !this.isStage,
             ...capacities,
         });
 
