@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "run-local": "cross-env AWS_PROFILE=hra npx jiti src/local-runner.ts",
-    "ts": "tsc --skipLibCheck",
+    "ts": "tsc",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
     "depcheck": "depcheck"
