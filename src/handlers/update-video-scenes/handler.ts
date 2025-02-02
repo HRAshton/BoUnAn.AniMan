@@ -1,5 +1,5 @@
 ﻿import { MatcherResultRequest } from '../../common/ts/interfaces';
-import { retry } from '../../shared/helpers/retry';
+import { retry } from '../../common/ts/runtime/retry';
 import { Handler } from 'aws-lambda/handler';
 import { updateVideoScenes } from './repository';
 import { sendSceneRecognizedNotification } from './sns-client';

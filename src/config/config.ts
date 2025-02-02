@@ -1,4 +1,4 @@
-﻿import { fetchSsmValue } from './ssm-client';
+﻿import { fetchSsmValue } from '../common/ts/runtime/ssm-client';
 
 
 interface LoanApiConfig {

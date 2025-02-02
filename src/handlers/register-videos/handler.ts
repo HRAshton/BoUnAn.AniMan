@@ -1,7 +1,7 @@
 ﻿import { insertVideo } from '../../shared/repository';
 import { getExistingVideos } from './repository';
 import { RegisterVideosRequest } from '../../common/ts/interfaces';
-import { retry } from '../../shared/helpers/retry';
+import { retry } from '../../common/ts/runtime/retry';
 import { sendVideoRegisteredNotification } from './sns-client';
 import { Handler } from 'aws-lambda/handler';
 import { initConfig } from '../../config/config';

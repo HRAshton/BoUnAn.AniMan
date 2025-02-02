@@ -1,7 +1,7 @@
 ﻿import { insertVideo } from '../../shared/repository';
 import { attachUserToVideo, getAnimeForUser, getRegisteredEpisodes } from './repository';
 import { BotRequest, BotResponse } from '../../common/ts/interfaces';
-import { retry } from '../../shared/helpers/retry';
+import { retry } from '../../common/ts/runtime/retry';
 import { VideoStatusNum } from '../../models/video-status-num';
 import { videoStatusToStr } from '../../shared/helpers/video-status-to-str';
 import { sendVideoRegisteredNotification } from './sns-client';

@@ -1,5 +1,5 @@
 ﻿import { DownloaderResultRequest } from '../../common/ts/interfaces';
-import { retry } from '../../shared/helpers/retry';
+import { retry } from '../../common/ts/runtime/retry';
 import { Handler } from 'aws-lambda/handler';
 import { clearSubscribers, getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
 import { sendVideoDownloadedNotification } from './sns-client';

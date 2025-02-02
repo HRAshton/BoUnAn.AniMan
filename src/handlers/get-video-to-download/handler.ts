@@ -1,5 +1,5 @@
 ﻿import { DownloaderResponse } from '../../common/ts/interfaces';
-import { retry } from '../../shared/helpers/retry';
+import { retry } from '../../common/ts/runtime/retry';
 import { Handler } from 'aws-lambda/handler';
 import { getEpisodeToDownloadAndLock } from './repository';
 import { initConfig } from '../../config/config';
