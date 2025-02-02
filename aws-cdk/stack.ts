@@ -36,16 +36,18 @@ export class AniManCdkStack extends Stack {
         this.export({
             AlertEmail: config.alertEmail,
             LoanApiToken: config.loanApiToken,
-            VideoRegisteredSnsTopicArn: topics.get(RequiredTopic.VideoRegistered)!.topicArn,
-            VideoDownloadedSnsTopicArn: topics.get(RequiredTopic.VideoDownloaded)!.topicArn,
-            SceneRecognisedSnsTopicArn: topics.get(RequiredTopic.SceneRecognised)!.topicArn,
-            GetAnimeFunctionName: functions.get(LambdaHandler.GetAnime)!.functionName,
-            GetVideoToDownloadFunctionName: functions.get(LambdaHandler.GetVideoToDownload)!.functionName,
-            UpdateVideoStatusFunctionName: functions.get(LambdaHandler.UpdateVideoStatus)!.functionName,
-            GetSeriesToMatchFunctionName: functions.get(LambdaHandler.GetSeriesToMatch)!.functionName,
-            UpdateVideoScenesFunctionName: functions.get(LambdaHandler.UpdateVideoScenes)!.functionName,
-            UpdatePublishingDetailsFunctionName: functions.get(LambdaHandler.UpdatePublishingDetails)!.functionName,
-            RegisterVideosFunctionName: functions.get(LambdaHandler.RegisterVideos)!.functionName,
+
+            VideoRegisteredSnsTopicArn: topics[RequiredTopic.VideoRegistered].topicArn,
+            VideoDownloadedSnsTopicArn: topics[RequiredTopic.VideoDownloaded].topicArn,
+            SceneRecognisedSnsTopicArn: topics[RequiredTopic.SceneRecognised].topicArn,
+
+            GetAnimeFunctionName: functions[LambdaHandler.GetAnime].functionName,
+            GetVideoToDownloadFunctionName: functions[LambdaHandler.GetVideoToDownload].functionName,
+            UpdateVideoStatusFunctionName: functions[LambdaHandler.UpdateVideoStatus].functionName,
+            GetSeriesToMatchFunctionName: functions[LambdaHandler.GetSeriesToMatch].functionName,
+            UpdateVideoScenesFunctionName: functions[LambdaHandler.UpdateVideoScenes].functionName,
+            UpdatePublishingDetailsFunctionName: functions[LambdaHandler.UpdatePublishingDetails].functionName,
+            RegisterVideosFunctionName: functions[LambdaHandler.RegisterVideos].functionName,
         });
     }
 
@@ -55,7 +57,7 @@ export class AniManCdkStack extends Stack {
 
     private createFilesTable(): {
         table: dynamodb.Table,
-        indexes: Map<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
+        indexes: Record<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
         // eslint-disable-next-line indent
     } {
         const capacities: Partial<dynamodb.TableProps> = {
@@ -104,21 +106,20 @@ export class AniManCdkStack extends Stack {
 
         return {
             table: filesTable,
-            indexes: new Map<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>([
-                [RequiredIndex.VideoKey, animeKeySecondaryIndex],
-                [RequiredIndex.DownloadStatusKey, dwnSecondaryIndex],
-                [RequiredIndex.MatcherStatusKey, matcherSecondaryIndex],
-            ]),
+            indexes: {
+                [RequiredIndex.VideoKey]: animeKeySecondaryIndex,
+                [RequiredIndex.DownloadStatusKey]: dwnSecondaryIndex,
+                [RequiredIndex.MatcherStatusKey]: matcherSecondaryIndex,
+            },
         };
     }
 
-    private createSnsTopics(): Map<RequiredTopic, sns.Topic> {
-        const result = new Map<RequiredTopic, sns.Topic>();
-        Object.values(RequiredTopic).forEach((topic) => {
-            result.set(topic, new sns.Topic(this, topic));
-        });
-
-        return result;
+    private createSnsTopics(): Record<RequiredTopic, sns.Topic> {
+        return {
+            [RequiredTopic.VideoRegistered]: new sns.Topic(this, RequiredTopic.VideoRegistered),
+            [RequiredTopic.VideoDownloaded]: new sns.Topic(this, RequiredTopic.VideoDownloaded),
+            [RequiredTopic.SceneRecognised]: new sns.Topic(this, RequiredTopic.SceneRecognised),
+        };
     }
 
     private createLogGroup(): logs.LogGroup {
@@ -150,8 +151,8 @@ export class AniManCdkStack extends Stack {
 
     private saveParameters(
         filesTable: dynamodb.Table,
-        indexes: Map<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
-        topics: Map<RequiredTopic, sns.Topic>,
+        indexes: Record<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
+        topics: Record<RequiredTopic, sns.Topic>,
         config: Config,
     ): ssm.IStringParameter {
         const value = {
@@ -161,14 +162,14 @@ export class AniManCdkStack extends Stack {
             },
             database: {
                 tableName: filesTable.tableName,
-                animeKeyIndexName: indexes.get(RequiredIndex.VideoKey)!.indexName,
-                secondaryIndexName: indexes.get(RequiredIndex.DownloadStatusKey)!.indexName,
-                matcherSecondaryIndexName: indexes.get(RequiredIndex.MatcherStatusKey)!.indexName,
+                animeKeyIndexName: indexes[RequiredIndex.VideoKey].indexName,
+                secondaryIndexName: indexes[RequiredIndex.DownloadStatusKey].indexName,
+                matcherSecondaryIndexName: indexes[RequiredIndex.MatcherStatusKey].indexName,
             },
             topics: {
-                videoRegisteredTopicArn: topics.get(RequiredTopic.VideoRegistered)!.topicArn,
-                videoDownloadedTopicArn: topics.get(RequiredTopic.VideoDownloaded)!.topicArn,
-                sceneRecognisedTopicArn: topics.get(RequiredTopic.SceneRecognised)!.topicArn,
+                videoRegisteredTopicArn: topics[RequiredTopic.VideoRegistered].topicArn,
+                videoDownloadedTopicArn: topics[RequiredTopic.VideoDownloaded].topicArn,
+                sceneRecognisedTopicArn: topics[RequiredTopic.SceneRecognised].topicArn,
             },
         } as Required<RuntimeConfig>;
 
@@ -180,11 +181,13 @@ export class AniManCdkStack extends Stack {
 
     private createLambdas(
         filesTable: dynamodb.Table,
-        topics: Map<RequiredTopic, sns.Topic>,
+        topics: Record<RequiredTopic, sns.Topic>,
         logGroup: logs.LogGroup,
         parameter: ssm.IStringParameter,
-    ): Map<LambdaHandler, lambda.Function> {
-        const functions = new Map<LambdaHandler, lambda.Function>();
+    ): Record<LambdaHandler, lambda.Function> {
+        // @ts-expect-error - we know that the keys are the same
+        const functions: Record<LambdaHandler, lambda.Function> = {};
+
         Object.entries(LambdaHandler).forEach(([lambdaName, handlerName]) => {
             const entry = USE_MOCKS
                 ? `src/handlers-mocks/${handlerName}.ts`
@@ -193,20 +196,20 @@ export class AniManCdkStack extends Stack {
             const func = new LlrtFunction(this, lambdaName, {
                 entry,
                 handler: 'handler',
-                logGroup: logGroup,
+                logGroup,
                 timeout: Duration.seconds(30),
             });
 
             filesTable.grantReadWriteData(func);
             parameter.grantRead(func);
-            functions.set(handlerName, func);
+            functions[handlerName as LambdaHandler] = func;
         });
 
-        topics.get(RequiredTopic.VideoRegistered)!.grantPublish(functions.get(LambdaHandler.GetAnime)!);
-        topics.get(RequiredTopic.VideoRegistered)!.grantPublish(functions.get(LambdaHandler.RegisterVideos)!);
-        topics.get(RequiredTopic.VideoDownloaded)!.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
-        topics.get(RequiredTopic.SceneRecognised)!.grantPublish(functions.get(LambdaHandler.UpdateVideoStatus)!);
-        topics.get(RequiredTopic.SceneRecognised)!.grantPublish(functions.get(LambdaHandler.UpdateVideoScenes)!);
+        topics[RequiredTopic.VideoRegistered].grantPublish(functions[LambdaHandler.GetAnime]);
+        topics[RequiredTopic.VideoRegistered].grantPublish(functions[LambdaHandler.RegisterVideos]);
+        topics[RequiredTopic.VideoDownloaded].grantPublish(functions[LambdaHandler.UpdateVideoStatus]);
+        topics[RequiredTopic.SceneRecognised].grantPublish(functions[LambdaHandler.UpdateVideoStatus]);
+        topics[RequiredTopic.SceneRecognised].grantPublish(functions[LambdaHandler.UpdateVideoScenes]);
 
         return functions;
     }
