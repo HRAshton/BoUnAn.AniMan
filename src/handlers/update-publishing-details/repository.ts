@@ -7,6 +7,7 @@ export const savePublishingDetails = async (videoKey: VideoKey, details: Publish
     const result = await docClient.send(new UpdateCommand({
         TableName: config.value.database.tableName,
         Key: { PrimaryKey: getVideoKey(videoKey) },
+        ConditionExpression: 'attribute_exists(PrimaryKey)',
         UpdateExpression: 'SET #publishingDetails = :publishingDetails, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
             '#publishingDetails': 'PublishingDetails',

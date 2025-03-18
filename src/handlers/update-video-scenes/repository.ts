@@ -24,9 +24,8 @@ export const updateVideoScenes = async (request: MatcherResultRequest): Promise<
 
         return new UpdateCommand({
             TableName: config.value.database.tableName,
-            Key: {
-                PrimaryKey: getVideoKey(item.VideoKey),
-            },
+            Key: { PrimaryKey: getVideoKey(item.VideoKey) },
+            ConditionExpression: 'attribute_exists(PrimaryKey)',
             UpdateExpression: 'SET Scenes = :scenes, UpdatedAt = :updatedAt REMOVE MatchingGroup',
             ExpressionAttributeValues: {
                 ':scenes': scenes,
