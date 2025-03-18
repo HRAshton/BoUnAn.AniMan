@@ -61,17 +61,19 @@ export class AniManCdkStack extends cfn.Stack {
         indexes: Record<RequiredIndex, dynamodb.GlobalSecondaryIndexProps>,
         // eslint-disable-next-line indent
     } {
-        const capacities: Partial<dynamodb.TableProps> = {
-            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            maxReadRequestUnits: 3,
-            maxWriteRequestUnits: 2,
+        const indexCapacities: Partial<dynamodb.TableProps> = {
+            billingMode: dynamodb.BillingMode.PROVISIONED,
+            readCapacity: 1,
+            writeCapacity: 1,
         };
 
         const filesTable = new dynamodb.Table(this, 'FilesTable', {
             partitionKey: { name: 'PrimaryKey', type: dynamodb.AttributeType.STRING },
             removalPolicy: cfn.RemovalPolicy.RETAIN,
             deletionProtection: !this.isStage,
-            ...capacities,
+            billingMode: dynamodb.BillingMode.PROVISIONED,
+            readCapacity: 3,
+            writeCapacity: 1,
         });
 
         const animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
@@ -80,7 +82,7 @@ export class AniManCdkStack extends cfn.Stack {
             sortKey: { name: 'Episode', type: dynamodb.AttributeType.NUMBER },
             projectionType: dynamodb.ProjectionType.INCLUDE,
             nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
-            ...capacities,
+            ...indexCapacities,
         };
 
         const dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
@@ -89,7 +91,7 @@ export class AniManCdkStack extends cfn.Stack {
             sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
             nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
-            ...capacities,
+            ...indexCapacities,
         };
 
         const matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
@@ -98,7 +100,7 @@ export class AniManCdkStack extends cfn.Stack {
             sortKey: { name: 'CreatedAt', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
             nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
-            ...capacities,
+            ...indexCapacities,
         };
 
         filesTable.addGlobalSecondaryIndex(animeKeySecondaryIndex);
