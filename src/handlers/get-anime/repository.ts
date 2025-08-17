@@ -39,6 +39,7 @@ export const attachUserToVideo = async (videoKey: VideoKey, chatId: number): Pro
     const command = new UpdateCommand({
         TableName: config.value.database.tableName,
         Key: { PrimaryKey: getVideoKey(videoKey) },
+        ConditionExpression: 'attribute_exists(PrimaryKey)',
         UpdateExpression: 'ADD #subscribers :chatId SET UpdatedAt = :updatedAt, SortKey = :sortKey',
         ExpressionAttributeNames: {
             '#subscribers': 'Subscribers',

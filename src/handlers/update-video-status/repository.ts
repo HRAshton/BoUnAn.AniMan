@@ -11,9 +11,7 @@ export type GetAnimeForNotificationResult
 export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
         TableName: config.value.database.tableName,
-        Key: {
-            PrimaryKey: getVideoKey(request),
-        },
+        Key: { PrimaryKey: getVideoKey(request) },
         ConditionExpression: 'attribute_exists(PrimaryKey)',
         UpdateExpression: 'SET #status = :status, #messageId = :messageId, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
@@ -33,9 +31,7 @@ export const markVideoDownloaded = async (request: VideoKey, messageId: number):
 export const markVideoFailed = async (request: VideoKey): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
         TableName: config.value.database.tableName,
-        Key: {
-            PrimaryKey: getVideoKey(request),
-        },
+        Key: { PrimaryKey: getVideoKey(request) },
         ConditionExpression: 'attribute_exists(PrimaryKey)',
         UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
@@ -64,9 +60,8 @@ export const getAnimeForNotification = async (request: VideoKey): Promise<GetAni
 export const clearSubscribers = async (request: VideoKey): Promise<void> => {
     const result = await docClient.send(new UpdateCommand({
         TableName: config.value.database.tableName,
-        Key: {
-            PrimaryKey: getVideoKey(request),
-        },
+        Key: { PrimaryKey: getVideoKey(request) },
+        ConditionExpression: 'attribute_exists(PrimaryKey)',
         UpdateExpression: 'REMOVE #subscribers',
         ExpressionAttributeNames: {
             '#subscribers': 'Subscribers',
