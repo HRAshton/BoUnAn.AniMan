@@ -9,13 +9,13 @@ import { initConfig } from '../../config/config';
 const process = async (request: RegisterVideosRequest): Promise<void> => {
     console.log('Processing request: ' + JSON.stringify(request));
 
-    const existingVideos = await getExistingVideos(request.Items.map(x => x.VideoKey));
+    const existingVideos = await getExistingVideos(request.items.map(x => x.videoKey));
     console.log('Existing videos: ' + JSON.stringify(existingVideos));
 
-    const videosToRegister = request.Items
-        .map(x => x.VideoKey)
+    const videosToRegister = request.items
+        .map(x => x.videoKey)
         .filter(x => !existingVideos
-            .some(y => y.MyAnimeListId === x.MyAnimeListId && y.Dub === x.Dub && y.Episode === x.Episode));
+            .some(y => y.myAnimeListId === x.myAnimeListId && y.dub === x.dub && y.episode === x.episode));
     console.log('Videos to register: ' + JSON.stringify(videosToRegister));
     if (videosToRegister.length === 0) {
         console.log('No videos to register');
@@ -31,8 +31,8 @@ const process = async (request: RegisterVideosRequest): Promise<void> => {
 
 export const handler: Handler<RegisterVideosRequest> = async (request) => {
     await initConfig();
-    if (!request || !request.Items || request.Items.length === 0
-        || request.Items.some(x => !x.VideoKey?.MyAnimeListId || !x.VideoKey?.Dub || !x.VideoKey?.Episode)) {
+    if (!request || !request.items || request.items.length === 0
+        || request.items.some(x => !x.videoKey?.myAnimeListId || !x.videoKey?.dub || !x.videoKey?.episode)) {
         throw new Error('Invalid request: ' + JSON.stringify(request));
     }
 

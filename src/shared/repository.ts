@@ -10,7 +10,7 @@ const dynamoDbClient = new DynamoDBClient();
 export const docClient = DynamoDBDocumentClient.from(dynamoDbClient);
 
 export const getVideoKey = (videoKey: VideoKey): string => {
-    return `${videoKey.MyAnimeListId}#${videoKey.Dub}#${videoKey.Episode}`;
+    return `${videoKey.myAnimeListId}#${videoKey.dub}#${videoKey.episode}`;
 }
 
 export const getAnimeKey = (myAnimeListId: number, dub: string): string => {
@@ -31,12 +31,12 @@ export const getDownloaderKey = (
 export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
     const putCommands = videos.map(video => ({
         PrimaryKey: getVideoKey(video),
-        AnimeKey: getAnimeKey(video.MyAnimeListId, video.Dub),
-        SortKey: getDownloaderKey(VideoStatusNum.Pending, false, new Date().toISOString(), video.Episode),
-        MatchingGroup: getAnimeKey(video.MyAnimeListId, video.Dub),
-        MyAnimeListId: video.MyAnimeListId,
-        Dub: video.Dub,
-        Episode: video.Episode,
+        AnimeKey: getAnimeKey(video.myAnimeListId, video.dub),
+        SortKey: getDownloaderKey(VideoStatusNum.Pending, false, new Date().toISOString(), video.episode),
+        MatchingGroup: getAnimeKey(video.myAnimeListId, video.dub),
+        MyAnimeListId: video.myAnimeListId,
+        Dub: video.dub,
+        Episode: video.episode,
         Status: VideoStatusNum.Pending,
         CreatedAt: new Date().toISOString(),
         UpdatedAt: new Date().toISOString(),

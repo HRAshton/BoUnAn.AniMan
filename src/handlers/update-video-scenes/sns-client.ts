@@ -5,7 +5,7 @@ import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 export const sendSceneRecognizedNotification = async (items: SceneRecognisedNotificationItem[]): Promise<void> => {
     const snsClient = new SNSClient();
 
-    const obj: SceneRecognisedNotification = { Items: items };
+    const obj: SceneRecognisedNotification = { items: items };
 
     const message = {
         default: JSON.stringify(obj),

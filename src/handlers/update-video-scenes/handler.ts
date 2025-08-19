@@ -10,7 +10,7 @@ const process = async (request: MatcherResultRequest): Promise<void> => {
     await updateVideoScenes(request);
     console.log('Video scenes updated.');
 
-    await sendSceneRecognizedNotification(request.Items);
+    await sendSceneRecognizedNotification(request.items);
     console.log('Video recognized notification sent.');
 }
 

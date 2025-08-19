@@ -6,8 +6,8 @@ import { initConfig } from '../../config/config';
 
 
 const process = async (request: PublisherResultRequest): Promise<void> => {
-    for (const item of request.Items) {
-        await savePublishingDetails(item.VideoKey, item.PublishingDetails);
+    for (const item of request.items) {
+        await savePublishingDetails(item.videoKey, item.publishingDetails);
     }
 
     console.log('Publishing details saved.');

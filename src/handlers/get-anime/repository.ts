@@ -47,7 +47,7 @@ export const attachUserToVideo = async (videoKey: VideoKey, chatId: number): Pro
         ExpressionAttributeValues: {
             ':chatId': new Set([chatId]),
             ':updatedAt': new Date().toISOString(),
-            ':sortKey': getDownloaderKey(VideoStatusNum.Pending, true, new Date().toISOString(), videoKey.Episode),
+            ':sortKey': getDownloaderKey(VideoStatusNum.Pending, true, new Date().toISOString(), videoKey.episode),
         },
         ReturnValues: 'NONE',
     });

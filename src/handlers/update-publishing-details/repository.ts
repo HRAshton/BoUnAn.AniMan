@@ -15,8 +15,8 @@ export const savePublishingDetails = async (videoKey: VideoKey, details: Publish
         },
         ExpressionAttributeValues: {
             ':publishingDetails': {
-                ThreadId: details.ThreadId,
-                MessageId: details.MessageId,
+                ThreadId: details.threadId,
+                MessageId: details.messageId,
             },
             ':updatedAt': new Date().toISOString(),
         },

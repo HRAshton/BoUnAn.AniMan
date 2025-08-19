@@ -4,29 +4,29 @@ import { Handler } from 'aws-lambda/handler';
 import { clearSubscribers, getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
 import { sendVideoDownloadedNotification } from './sns-client';
 import { initConfig } from '../../config/config';
+import { scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
 
 
 const process = async (request: DownloaderResultRequest): Promise<void> => {
-    if (request.MessageId) {
+    if (request.messageId) {
         console.log('Video downloaded.');
-        await markVideoDownloaded(request.VideoKey, request.MessageId);
+        await markVideoDownloaded(request.videoKey, request.messageId);
     } else {
         console.warn('Video download failed.');
-        await markVideoFailed(request.VideoKey);
+        await markVideoFailed(request.videoKey);
     }
 
-    const videoInfo = await getAnimeForNotification(request.VideoKey);
+    const videoInfo = await getAnimeForNotification(request.videoKey);
 
     if (videoInfo?.Subscribers?.size) {
         console.log('Subscribers: ' + JSON.stringify(videoInfo.Subscribers));
-        await clearSubscribers(request.VideoKey);
+        await clearSubscribers(request.videoKey);
     }
 
     const notification = {
-        VideoKey: request.VideoKey,
-        MessageId: request.MessageId,
-        SubscriberChatIds: videoInfo?.Subscribers ? Array.from(videoInfo.Subscribers) : [],
-        Scenes: videoInfo?.Scenes,
+        videoKey: request.videoKey,
+        messageId: request.messageId,
+        scenes: scenesToCamelCase(videoInfo?.Scenes),
     };
 
     await sendVideoDownloadedNotification(notification);

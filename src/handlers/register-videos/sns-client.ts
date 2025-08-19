@@ -6,7 +6,7 @@ export const sendVideoRegisteredNotification = async (items: VideoKey[]): Promis
     const snsClient = new SNSClient();
 
     const obj: VideoRegisteredNotification = {
-        Items: items.map(item => ({ VideoKey: item })),
+        items: items.map(item => ({ videoKey: item })),
     }
 
     const message = {

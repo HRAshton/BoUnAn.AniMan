@@ -6,45 +6,44 @@ import { Handler } from 'aws-lambda/handler';
 export const handler: Handler<BotRequest, BotResponse> = async (request) => {
     console.log(request);
 
-    if (!request.VideoKey.MyAnimeListId || !request.VideoKey.Dub
-        || request.VideoKey.Episode === null || !request.ChatId) {
+    if (!request.videoKey.myAnimeListId || !request.videoKey.dub || request.videoKey.episode === null) {
         throw new Error('Invalid request: ' + JSON.stringify(request));
     }
 
-    if (request.VideoKey.Episode === 1) {
+    if (request.videoKey.episode === 1) {
         return {
-            Status: 'Pending',
-            MessageId: undefined,
-            Scenes: undefined,
-            PublishingDetails: undefined,
+            status: 'Pending',
+            messageId: undefined,
+            scenes: undefined,
+            publishingDetails: undefined,
         };
     }
 
-    if (request.VideoKey.Episode === 2) {
+    if (request.videoKey.episode === 2) {
         return {
-            Status: 'Downloading',
-            MessageId: undefined,
-            Scenes: undefined,
-            PublishingDetails: undefined,
+            status: 'Downloading',
+            messageId: undefined,
+            scenes: undefined,
+            publishingDetails: undefined,
         };
     }
 
     return {
-        Status: 'Downloaded',
-        MessageId: 4008,
-        Scenes: {
-            Opening: {
-                Start: 70,
-                End: 158,
+        status: 'Downloaded',
+        messageId: 4008,
+        scenes: {
+            opening: {
+                start: 70,
+                end: 158,
             },
-            Ending: {
-                Start: 1281,
-                End: 1372.55,
+            ending: {
+                start: 1281,
+                end: 1372.55,
             },
         },
-        PublishingDetails: {
-            ThreadId: 6377,
-            MessageId: 6396,
+        publishingDetails: {
+            threadId: 6377,
+            messageId: 6396,
         },
     };
 };

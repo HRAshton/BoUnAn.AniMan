@@ -3,13 +3,14 @@ import { retry } from '../../common/ts/runtime/retry';
 import { Handler } from 'aws-lambda/handler';
 import { getEpisodesToMatch } from './repository';
 import { initConfig } from '../../config/config';
+import { videoKeyToCamelCase } from '../../shared/helpers/camelCaseHelper';
 
 
 const process = async (): Promise<MatcherResponse> => {
     const episodes = await getEpisodesToMatch();
     console.log('Episodes to match: ' + JSON.stringify(episodes));
 
-    return { VideosToMatch: episodes };
+    return { videosToMatch: episodes.map(x => videoKeyToCamelCase(x)!) }; // TODO
 }
 
 export const handler: Handler<undefined, MatcherResponse> = async () => {

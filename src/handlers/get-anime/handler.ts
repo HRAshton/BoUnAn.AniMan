@@ -8,29 +8,30 @@ import { sendVideoRegisteredNotification } from './sns-client';
 import { Handler } from 'aws-lambda/handler';
 import { config, initConfig } from '../../config/config';
 import { getExistingVideos, setToken } from '../../loan-api/src/animan-loan-api-client';
+import { publishingDetailsToCamelCase, scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
 
 const addAnime = async (request: BotRequest): Promise<VideoStatusNum> => {
-    const videoKey = request.VideoKey;
+    const videoKey = request.videoKey;
 
-    const videoInfos = await getExistingVideos(videoKey.MyAnimeListId, videoKey.Dub);
+    const videoInfos = await getExistingVideos(videoKey.myAnimeListId, videoKey.dub);
     console.log('Video fetched from LoanAPI: ' + JSON.stringify(videoInfos));
 
-    const dubEpisodes = videoInfos.filter(x => x.MyAnimeListId === videoKey.MyAnimeListId && x.Dub === videoKey.Dub);
+    const dubEpisodes = videoInfos.filter(x => x.myAnimeListId === videoKey.myAnimeListId && x.dub === videoKey.dub);
 
-    const requestedVideo = dubEpisodes.find(x => x.Episode === videoKey.Episode);
+    const requestedVideo = dubEpisodes.find(x => x.episode === videoKey.episode);
     if (!requestedVideo) {
         console.warn('Video not available: ' + JSON.stringify(request));
         return VideoStatusNum.NotAvailable;
     }
 
-    const registeredEpisodes = await getRegisteredEpisodes(videoKey.MyAnimeListId, videoKey.Dub);
-    const videosToRegister = dubEpisodes.filter(n => !registeredEpisodes.includes(n.Episode));
+    const registeredEpisodes = await getRegisteredEpisodes(videoKey.myAnimeListId, videoKey.dub);
+    const videosToRegister = dubEpisodes.filter(n => !registeredEpisodes.includes(n.episode));
     console.log('Videos to register: ' + JSON.stringify(videosToRegister));
 
     await insertVideo(videosToRegister);
     console.log('Video added to database');
 
-    await attachUserToVideo(request.VideoKey, request.ChatId);
+    await attachUserToVideo(request.videoKey, -1); // TODO
     console.log('User attached to video');
 
     await sendVideoRegisteredNotification(videosToRegister);
@@ -40,17 +41,17 @@ const addAnime = async (request: BotRequest): Promise<VideoStatusNum> => {
 }
 
 const process = async (request: BotRequest): Promise<BotResponse> => {
-    const video = await getAnimeForUser(request.VideoKey);
+    const video = await getAnimeForUser(request.videoKey);
     console.log('Video: ' + JSON.stringify(video));
 
     switch (video?.Status) {
         case VideoStatusNum.Downloaded:
         case VideoStatusNum.Failed: {
             const response = {
-                Status: videoStatusToStr(video.Status),
-                MessageId: video.MessageId,
-                Scenes: video.Scenes,
-                PublishingDetails: video.PublishingDetails,
+                status: videoStatusToStr(video.Status),
+                messageId: video.MessageId,
+                scenes: scenesToCamelCase(video.Scenes),
+                publishingDetails: publishingDetailsToCamelCase(video.PublishingDetails),
             };
             console.log('Returning video as is: ' + JSON.stringify(response));
             return response;
@@ -59,12 +60,12 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
         case VideoStatusNum.Pending:
         case VideoStatusNum.Downloading: {
             console.log('Attaching user to the video');
-            await attachUserToVideo(request.VideoKey, request.ChatId);
+            await attachUserToVideo(request.videoKey, -1); // TODO
             return {
-                Status: videoStatusToStr(video.Status),
-                MessageId: undefined,
-                Scenes: undefined,
-                PublishingDetails: undefined,
+                status: videoStatusToStr(video.Status),
+                messageId: undefined,
+                scenes: undefined,
+                publishingDetails: undefined,
             };
         }
 
@@ -72,10 +73,10 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
             console.log('Adding anime');
             const status = await addAnime(request);
             return {
-                Status: videoStatusToStr(status),
-                MessageId: undefined,
-                Scenes: undefined,
-                PublishingDetails: undefined,
+                status: videoStatusToStr(status),
+                messageId: undefined,
+                scenes: undefined,
+                publishingDetails: undefined,
             };
         }
 
@@ -88,8 +89,7 @@ export const handler: Handler<BotRequest, BotResponse> = async (request) => {
     await initConfig();
     setToken(config.value.loanApiConfig.token);
 
-    if (!request.VideoKey.MyAnimeListId || !request.VideoKey.Dub
-        || request.VideoKey.Episode === null || !request.ChatId) {
+    if (!request.videoKey.myAnimeListId || !request.videoKey.dub || request.videoKey.episode === null) {
         throw new Error('Invalid request: ' + JSON.stringify(request));
     }
 
