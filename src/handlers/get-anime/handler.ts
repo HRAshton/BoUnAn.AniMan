@@ -7,7 +7,7 @@ import { videoStatusToStr } from '../../shared/helpers/video-status-to-str';
 import { sendVideoRegisteredNotification } from './sns-client';
 import { Handler } from 'aws-lambda/handler';
 import { config, initConfig } from '../../config/config';
-import { getExistingVideos, setToken } from '../../loan-api/src/animan-loan-api-client';
+import { getExistingVideos, setToken } from '../../loan-api/src/loan-api-client';
 import { publishingDetailsToCamelCase, scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
 
 const addAnime = async (request: BotRequest): Promise<VideoStatusNum> => {
