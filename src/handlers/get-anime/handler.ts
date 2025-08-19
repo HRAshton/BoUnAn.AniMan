@@ -1,5 +1,5 @@
 ﻿import { insertVideo } from '../../shared/repository';
-import { attachUserToVideo, getAnimeForUser, getRegisteredEpisodes } from './repository';
+import { getAnimeForUser, getRegisteredEpisodes } from './repository';
 import { BotRequest, BotResponse } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
 import { VideoStatusNum } from '../../models/video-status-num';
@@ -31,9 +31,6 @@ const addAnime = async (request: BotRequest): Promise<VideoStatusNum> => {
     await insertVideo(videosToRegister);
     console.log('Video added to database');
 
-    await attachUserToVideo(request.videoKey, -1); // TODO
-    console.log('User attached to video');
-
     await sendVideoRegisteredNotification(videosToRegister);
     console.log('Video registered notification sent: ' + JSON.stringify(videosToRegister));
 
@@ -59,8 +56,7 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
 
         case VideoStatusNum.Pending:
         case VideoStatusNum.Downloading: {
-            console.log('Attaching user to the video');
-            await attachUserToVideo(request.videoKey, -1); // TODO
+            console.log('Returning video as pending or downloading');
             return {
                 status: videoStatusToStr(video.Status),
                 messageId: undefined,

@@ -14,7 +14,6 @@ export interface VideoEntity {
     SortKey?: string;
     MatchingGroup?: string;
 
-    Subscribers?: Set<number>;
     MessageId?: number;
     Scenes?: {
         Opening?: {

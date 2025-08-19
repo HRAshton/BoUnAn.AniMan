@@ -1,7 +1,7 @@
 ﻿import { DownloaderResultRequest } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
 import { Handler } from 'aws-lambda/handler';
-import { clearSubscribers, getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
+import { getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
 import { sendVideoDownloadedNotification } from './sns-client';
 import { initConfig } from '../../config/config';
 import { scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
@@ -17,11 +17,6 @@ const process = async (request: DownloaderResultRequest): Promise<void> => {
     }
 
     const videoInfo = await getAnimeForNotification(request.videoKey);
-
-    if (videoInfo?.Subscribers?.size) {
-        console.log('Subscribers: ' + JSON.stringify(videoInfo.Subscribers));
-        await clearSubscribers(request.videoKey);
-    }
 
     const notification = {
         videoKey: request.videoKey,
