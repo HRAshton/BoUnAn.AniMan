@@ -1,9 +1,10 @@
 ﻿import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { BatchWriteCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+
 import { VideoKey } from '../common/ts/interfaces';
-import { VideoStatusNum } from '../models/video-status-num';
-import { VideoEntity } from '../models/video-entity';
 import { config } from '../config/config';
+import { VideoEntity } from '../models/video-entity';
+import { VideoStatusNum } from '../models/video-status-num';
 
 const dynamoDbClient = new DynamoDBClient();
 
@@ -17,7 +18,7 @@ export const getAnimeKey = (myAnimeListId: number, dub: string): string => {
     return `${myAnimeListId}#${dub}`;
 }
 
-export const getDownloaderKey = (
+const getDownloaderKey = (
     status: VideoStatusNum,
     hasSubscriber: boolean,
     createdAt: string,

@@ -1,6 +1,7 @@
-﻿import { config } from '../../config/config';
+﻿import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+
 import { SceneRecognisedNotification, SceneRecognisedNotificationItem } from '../../common/ts/interfaces';
-import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+import { config } from '../../config/config';
 
 export const sendSceneRecognizedNotification = async (items: SceneRecognisedNotificationItem[]): Promise<void> => {
     const snsClient = new SNSClient();

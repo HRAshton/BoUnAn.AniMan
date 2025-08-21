@@ -1,10 +1,11 @@
-﻿import { insertVideo } from '../../shared/repository';
-import { getExistingVideos } from './repository';
+﻿import { Handler } from 'aws-lambda/handler';
+
 import { RegisterVideosRequest } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
-import { sendVideoRegisteredNotification } from './sns-client';
-import { Handler } from 'aws-lambda/handler';
 import { initConfig } from '../../config/config';
+import { insertVideo } from '../../shared/repository';
+import { getExistingVideos } from './repository';
+import { sendVideoRegisteredNotification } from './sns-client';
 
 const process = async (request: RegisterVideosRequest): Promise<void> => {
     console.log('Processing request: ' + JSON.stringify(request));

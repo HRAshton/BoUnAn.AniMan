@@ -1,11 +1,11 @@
 ﻿import { GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { VideoEntity } from '../../models/video-entity';
+
 import { VideoKey } from '../../common/ts/interfaces';
 import { config } from '../../config/config';
+import { VideoEntity } from '../../models/video-entity';
 import { docClient, getAnimeKey, getVideoKey } from '../../shared/repository';
 
-export type GetAnimeForUserResult
-    = Pick<VideoEntity, 'Status' | 'MessageId' | 'Scenes' | 'PublishingDetails'> | undefined;
+type GetAnimeForUserResult = Pick<VideoEntity, 'Status' | 'MessageId' | 'Scenes' | 'PublishingDetails'> | undefined;
 
 export const getAnimeForUser = async (videoKey: VideoKey): Promise<GetAnimeForUserResult> => {
     const command = new GetCommand({

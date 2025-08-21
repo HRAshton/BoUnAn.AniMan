@@ -1,5 +1,6 @@
-﻿import { RegisterVideosRequest } from '../common/ts/interfaces';
-import { Handler } from 'aws-lambda/handler';
+﻿import { Handler } from 'aws-lambda/handler';
+
+import { RegisterVideosRequest } from '../common/ts/interfaces';
 
 
 export const handler: Handler<RegisterVideosRequest> = async (request) => {

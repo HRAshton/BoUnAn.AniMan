@@ -1,8 +1,9 @@
 ﻿import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { config } from '../../config/config';
-import { docClient, getVideoKey } from '../../shared/repository';
+
 import { MatcherResultRequest } from '../../common/ts/interfaces';
+import { config } from '../../config/config';
 import { VideoEntity } from '../../models/video-entity';
+import { docClient, getVideoKey } from '../../shared/repository';
 
 export const updateVideoScenes = async (request: MatcherResultRequest): Promise<void> => {
     const updatedAt = new Date().toISOString();

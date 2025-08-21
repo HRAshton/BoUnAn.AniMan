@@ -1,8 +1,9 @@
 ﻿import { DeleteCommand, GetCommand, PutCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { VideoEntity } from '../../models/video-entity';
+
 import { config } from '../../config/config';
-import { docClient } from '../../shared/repository';
+import { VideoEntity } from '../../models/video-entity';
 import { VideoStatusNum } from '../../models/video-status-num';
+import { docClient } from '../../shared/repository';
 
 type GetEpisodeToDownloadResult = Pick<VideoEntity, 'MyAnimeListId' | 'Dub' | 'Episode'> | undefined;
 

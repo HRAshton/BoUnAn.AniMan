@@ -1,7 +1,8 @@
-﻿import { docClient, getVideoKey } from '../../shared/repository';
-import { BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+﻿import { BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+
 import { VideoKey } from '../../common/ts/interfaces';
 import { config } from '../../config/config';
+import { docClient, getVideoKey } from '../../shared/repository';
 
 const GET_OPERATION_LIMIT = 100;
 const TABLE_PRIMARY_KEY = 'PrimaryKey';

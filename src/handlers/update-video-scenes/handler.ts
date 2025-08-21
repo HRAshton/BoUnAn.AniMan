@@ -1,9 +1,10 @@
-﻿import { MatcherResultRequest } from '../../common/ts/interfaces';
+﻿import { Handler } from 'aws-lambda/handler';
+
+import { MatcherResultRequest } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
-import { Handler } from 'aws-lambda/handler';
+import { initConfig } from '../../config/config';
 import { updateVideoScenes } from './repository';
 import { sendSceneRecognizedNotification } from './sns-client';
-import { initConfig } from '../../config/config';
 
 
 const process = async (request: MatcherResultRequest): Promise<void> => {

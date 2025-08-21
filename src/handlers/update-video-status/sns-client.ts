@@ -1,6 +1,7 @@
-﻿import { config } from '../../config/config';
+﻿import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+
 import { VideoDownloadedNotification } from '../../common/ts/interfaces';
-import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+import { config } from '../../config/config';
 
 export const sendVideoDownloadedNotification = async (notification: VideoDownloadedNotification): Promise<void> => {
     const snsClient = new SNSClient();

@@ -1,5 +1,6 @@
-﻿import { BotRequest, BotResponse } from '../common/ts/interfaces';
-import { Handler } from 'aws-lambda/handler';
+﻿import { Handler } from 'aws-lambda/handler';
+
+import { BotRequest, BotResponse } from '../common/ts/interfaces';
 
 // The mock handler is a simplified version of the handler that can be used for debugging.
 

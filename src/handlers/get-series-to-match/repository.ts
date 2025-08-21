@@ -1,6 +1,7 @@
 ﻿import { ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { VideoEntity } from '../../models/video-entity';
+
 import { config } from '../../config/config';
+import { VideoEntity } from '../../models/video-entity';
 import { docClient } from '../../shared/repository';
 
 type GetEpisodesToMatchResult = Pick<VideoEntity, 'MyAnimeListId' | 'Dub' | 'Episode'>[];

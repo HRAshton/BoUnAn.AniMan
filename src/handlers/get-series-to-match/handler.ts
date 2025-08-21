@@ -1,9 +1,10 @@
-﻿import { MatcherResponse } from '../../common/ts/interfaces';
+﻿import { Handler } from 'aws-lambda/handler';
+
+import { MatcherResponse } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
-import { Handler } from 'aws-lambda/handler';
-import { getEpisodesToMatch } from './repository';
 import { initConfig } from '../../config/config';
 import { videoKeyToCamelCase } from '../../shared/helpers/camelCaseHelper';
+import { getEpisodesToMatch } from './repository';
 
 
 const process = async (): Promise<MatcherResponse> => {

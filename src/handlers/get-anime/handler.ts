@@ -1,14 +1,15 @@
-﻿import { insertVideo } from '../../shared/repository';
-import { getAnimeForUser, getRegisteredEpisodes } from './repository';
+﻿import { Handler } from 'aws-lambda/handler';
+
 import { BotRequest, BotResponse } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
-import { VideoStatusNum } from '../../models/video-status-num';
-import { videoStatusToStr } from '../../shared/helpers/video-status-to-str';
-import { sendVideoRegisteredNotification } from './sns-client';
-import { Handler } from 'aws-lambda/handler';
 import { config, initConfig } from '../../config/config';
 import { getExistingVideos, setToken } from '../../loan-api/src/loan-api-client';
+import { VideoStatusNum } from '../../models/video-status-num';
 import { publishingDetailsToCamelCase, scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
+import { videoStatusToStr } from '../../shared/helpers/video-status-to-str';
+import { insertVideo } from '../../shared/repository';
+import { getAnimeForUser, getRegisteredEpisodes } from './repository';
+import { sendVideoRegisteredNotification } from './sns-client';
 
 const addAnime = async (request: BotRequest): Promise<VideoStatusNum> => {
     const videoKey = request.videoKey;

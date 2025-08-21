@@ -1,10 +1,11 @@
-﻿import { DownloaderResultRequest } from '../../common/ts/interfaces';
+﻿import { Handler } from 'aws-lambda/handler';
+
+import { DownloaderResultRequest } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
-import { Handler } from 'aws-lambda/handler';
-import { getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
-import { sendVideoDownloadedNotification } from './sns-client';
 import { initConfig } from '../../config/config';
 import { scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
+import { getAnimeForNotification, markVideoDownloaded, markVideoFailed } from './repository';
+import { sendVideoDownloadedNotification } from './sns-client';
 
 
 const process = async (request: DownloaderResultRequest): Promise<void> => {

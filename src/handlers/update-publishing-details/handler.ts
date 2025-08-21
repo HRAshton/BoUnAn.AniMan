@@ -1,8 +1,9 @@
-﻿import { PublisherResultRequest } from '../../common/ts/interfaces';
+﻿import { Handler } from 'aws-lambda/handler';
+
+import { PublisherResultRequest } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
-import { Handler } from 'aws-lambda/handler';
-import { savePublishingDetails } from './repository';
 import { initConfig } from '../../config/config';
+import { savePublishingDetails } from './repository';
 
 
 const process = async (request: PublisherResultRequest): Promise<void> => {
