@@ -12,7 +12,7 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
     const videoToDownload = await docClient.send(new ScanCommand({
         TableName: config.value.database.tableName,
         IndexName: config.value.database.secondaryIndexName,
-        Limit: 1,
+        Limit: 10, // Scan a few items to reduce chance of empty result
         FilterExpression: '#S = :pending',
         ExpressionAttributeNames: {
             '#S': 'Status',
