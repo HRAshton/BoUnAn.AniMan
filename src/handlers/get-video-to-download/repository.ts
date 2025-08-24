@@ -7,17 +7,24 @@ import { docClient } from '../../shared/repository';
 
 type GetEpisodeToDownloadResult = Pick<VideoEntity, 'MyAnimeListId' | 'Dub' | 'Episode'>;
 
-// Get first matching group and all its video keys
+// Get first video to download and set its status to Downloading.
 export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloadResult | undefined> => {
     const videoToDownload = await docClient.send(new ScanCommand({
         TableName: config.value.database.tableName,
         IndexName: config.value.database.secondaryIndexName,
         Limit: 1,
+        FilterExpression: '#S = :pending',
+        ExpressionAttributeNames: {
+            '#S': 'Status',
+        },
+        ExpressionAttributeValues: {
+            ':pending': VideoStatusNum.Pending,
+        },
         Select: 'SPECIFIC_ATTRIBUTES',
-        ProjectionExpression: 'PrimaryKey',
+        ProjectionExpression: 'PrimaryKey, UpdatedAt',
     }));
 
-    const video = videoToDownload.Items?.[0] as GetEpisodeToDownloadResult & { PrimaryKey: string } | undefined;
+    const video = videoToDownload.Items?.[0] as Pick<VideoEntity, 'PrimaryKey' | 'UpdatedAt'> | undefined;
     if (!video) {
         return undefined;
     }
@@ -26,10 +33,13 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
         TableName: config.value.database.tableName,
         Key: { PrimaryKey: video.PrimaryKey },
         UpdateExpression: 'SET #S = :downloading, UpdatedAt = :now',
+        ConditionExpression: '#S = :pending AND UpdatedAt = :oldUpdatedAt',
         ExpressionAttributeNames: {
             '#S': 'Status',
         },
         ExpressionAttributeValues: {
+            ':pending': VideoStatusNum.Pending,
+            ':oldUpdatedAt': video.UpdatedAt,
             ':downloading': VideoStatusNum.Downloading,
             ':now': new Date().toISOString(),
         },
