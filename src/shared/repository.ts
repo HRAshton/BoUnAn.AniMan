@@ -1,5 +1,5 @@
 ﻿import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { BatchWriteCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { BatchWriteCommand, DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 import { VideoKey } from '../common/ts/interfaces';
 import { config } from '../config/config';
@@ -66,4 +66,19 @@ export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
     }
 
     console.log('All videos inserted');
+}
+
+export const increasePriority = async (videoKey: VideoKey): Promise<void> => {
+    const command = new UpdateCommand({
+        TableName: config.value.database.tableName,
+        Key: { PrimaryKey: getVideoKey(videoKey) },
+        UpdateExpression: 'SET SortKey = :newSortKey, UpdatedAt = :updatedAt',
+        ConditionExpression: 'attribute_exists(PrimaryKey)',
+        ExpressionAttributeValues: {
+            ':newSortKey': getDownloaderKey(VideoStatusNum.Pending, true, new Date().toISOString(), videoKey.episode),
+            ':updatedAt': new Date().toISOString(),
+        },
+    });
+
+    await docClient.send(command);
 }

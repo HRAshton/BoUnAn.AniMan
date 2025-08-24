@@ -7,7 +7,7 @@ import { getExistingVideos, setToken } from '../../loan-api/src/loan-api-client'
 import { VideoStatusNum } from '../../models/video-status-num';
 import { publishingDetailsToCamelCase, scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
 import { videoStatusToStr } from '../../shared/helpers/video-status-to-str';
-import { insertVideo } from '../../shared/repository';
+import { increasePriority, insertVideo } from '../../shared/repository';
 import { getAnimeForUser, getRegisteredEpisodes } from './repository';
 import { sendVideoRegisteredNotification } from './sns-client';
 
@@ -31,6 +31,9 @@ const addAnime = async (request: BotRequest): Promise<VideoStatusNum> => {
 
     await insertVideo(videosToRegister);
     console.log('Video added to database');
+
+    await increasePriority(request.videoKey);
+    console.log('Priority increased for requested video: ' + JSON.stringify(requestedVideo));
 
     await sendVideoRegisteredNotification(videosToRegister);
     console.log('Video registered notification sent: ' + JSON.stringify(videosToRegister));
@@ -58,6 +61,7 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
         case VideoStatusNum.Pending:
         case VideoStatusNum.Downloading: {
             console.log('Returning video as pending or downloading');
+            await increasePriority(request.videoKey);
             return {
                 status: videoStatusToStr(video.Status),
                 messageId: undefined,

@@ -58,6 +58,16 @@ const main = async () => {
         messageId: 1,
     }, null as any, null as any);
     console.log(s5);
+
+    const s6 = await getAnime({
+        videoKey: {
+            myAnimeListId: myAnimeListId,
+            dub: dub,
+            episode: 7,
+        },
+    }, null as any, null as any);
+    console.log(s6);
+
 }
 
 main();
