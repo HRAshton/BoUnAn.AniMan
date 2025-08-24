@@ -12,6 +12,7 @@ import { Construct } from 'constructs';
 
 import { ExportNames } from '../src/common/ts/cdk/export-names';
 import { Config as RuntimeConfig } from '../src/config/config';
+import { VideoEntity } from '../src/models/video-entity';
 import { Config, getConfig } from './config';
 
 const USE_MOCKS = false;
@@ -81,16 +82,25 @@ export class AniManCdkStack extends cfn.Stack {
             partitionKey: { name: 'AnimeKey', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'Episode', type: dynamodb.AttributeType.NUMBER },
             projectionType: dynamodb.ProjectionType.INCLUDE,
-            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
+            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'] as (keyof VideoEntity)[],
             ...indexCapacities,
         };
 
         const dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
+            indexName: RequiredIndex.OldDownloadStatusKey,
+            partitionKey: { name: 'Status', type: dynamodb.AttributeType.NUMBER },
+            sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
+            projectionType: dynamodb.ProjectionType.INCLUDE,
+            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'] as (keyof VideoEntity)[],
+            ...indexCapacities,
+        };
+
+        const dwnSecondaryIndex2: dynamodb.GlobalSecondaryIndexProps = {
             indexName: RequiredIndex.DownloadStatusKey,
             partitionKey: { name: 'Status', type: dynamodb.AttributeType.NUMBER },
             sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
-            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
+            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode', 'UpdatedAt'] as (keyof VideoEntity)[],
             ...indexCapacities,
         };
 
@@ -99,12 +109,13 @@ export class AniManCdkStack extends cfn.Stack {
             partitionKey: { name: 'MatchingGroup', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'CreatedAt', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
-            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'],
+            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'] as (keyof VideoEntity)[],
             ...indexCapacities,
         };
 
         filesTable.addGlobalSecondaryIndex(animeKeySecondaryIndex);
         filesTable.addGlobalSecondaryIndex(dwnSecondaryIndex);
+        filesTable.addGlobalSecondaryIndex(dwnSecondaryIndex2);
         filesTable.addGlobalSecondaryIndex(matcherSecondaryIndex);
 
         return {
@@ -113,6 +124,8 @@ export class AniManCdkStack extends cfn.Stack {
                 [RequiredIndex.VideoKey]: animeKeySecondaryIndex,
                 [RequiredIndex.DownloadStatusKey]: dwnSecondaryIndex,
                 [RequiredIndex.MatcherStatusKey]: matcherSecondaryIndex,
+
+                [RequiredIndex.OldDownloadStatusKey]: dwnSecondaryIndex2,
             },
         };
     }
@@ -251,6 +264,7 @@ enum RequiredTopic {
 
 enum RequiredIndex {
     VideoKey = 'AnimeKey-Episode-index',
-    DownloadStatusKey = 'Status-SortKey-index',
+    OldDownloadStatusKey = 'Status-SortKey-index',
+    DownloadStatusKey = 'Status-SortKey-index2',
     MatcherStatusKey = 'Matcher-CreatedAt-index',
 }
