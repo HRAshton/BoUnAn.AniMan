@@ -6,8 +6,6 @@ import { VideoEntity } from '../../models/video-entity';
 import { docClient, getVideoKey } from '../../shared/repository';
 
 export const updateVideoScenes = async (request: MatcherResultRequest): Promise<void> => {
-    const updatedAt = new Date().toISOString();
-
     const updateCommands = request.items.map(item => {
         const scenes: VideoEntity['Scenes'] = {};
 
@@ -39,7 +37,7 @@ export const updateVideoScenes = async (request: MatcherResultRequest): Promise<
             UpdateExpression: 'SET Scenes = :scenes, UpdatedAt = :updatedAt REMOVE MatchingGroup',
             ExpressionAttributeValues: {
                 ':scenes': scenes,
-                ':updatedAt': updatedAt,
+                ':updatedAt': new Date().toISOString(),
             },
         });
     });

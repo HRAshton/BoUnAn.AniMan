@@ -1,4 +1,4 @@
-﻿import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+﻿import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 import { VideoKey } from '../../common/ts/interfaces';
 import { config } from '../../config/config';
@@ -6,9 +6,11 @@ import { VideoEntity } from '../../models/video-entity';
 import { VideoStatusNum } from '../../models/video-status-num';
 import { docClient, getVideoKey } from '../../shared/repository';
 
-type GetAnimeForNotificationResult = Pick<VideoEntity, 'Scenes' | 'PublishingDetails'> | undefined;
-
-export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<void> => {
+const markVideo = async (
+    request: VideoKey,
+    status: VideoStatusNum,
+    messageId: number | undefined,
+): Promise<VideoEntity> => {
     const result = await docClient.send(new UpdateCommand({
         TableName: config.value.database.tableName,
         Key: { PrimaryKey: getVideoKey(request) },
@@ -20,39 +22,21 @@ export const markVideoDownloaded = async (request: VideoKey, messageId: number):
             '#updatedAt': 'UpdatedAt',
         },
         ExpressionAttributeValues: {
-            ':status': VideoStatusNum.Downloaded,
+            ':status': status,
             ':messageId': messageId,
             ':updatedAt': new Date().toISOString(),
         },
+        ReturnValues: 'ALL_NEW',
     }));
     console.log('Update result: ' + JSON.stringify(result));
+    
+    return result.Attributes as VideoEntity;
 }
 
-export const markVideoFailed = async (request: VideoKey): Promise<void> => {
-    const result = await docClient.send(new UpdateCommand({
-        TableName: config.value.database.tableName,
-        Key: { PrimaryKey: getVideoKey(request) },
-        ConditionExpression: 'attribute_exists(PrimaryKey)',
-        UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
-        ExpressionAttributeNames: {
-            '#status': 'Status',
-            '#updatedAt': 'UpdatedAt',
-        },
-        ExpressionAttributeValues: {
-            ':status': VideoStatusNum.Failed,
-            ':updatedAt': new Date().toISOString(),
-        },
-    }));
-    console.log('Update result: ' + JSON.stringify(result));
+export const markVideoDownloaded = async (request: VideoKey, messageId: number): Promise<VideoEntity> => {
+    return markVideo(request, VideoStatusNum.Downloaded, messageId);
 }
 
-export const getAnimeForNotification = async (request: VideoKey): Promise<GetAnimeForNotificationResult> => {
-    const command = new GetCommand({
-        TableName: config.value.database.tableName,
-        Key: { PrimaryKey: getVideoKey(request) },
-        AttributesToGet: ['Scenes', 'PublishingDetails'] as (keyof VideoEntity)[],
-    });
-
-    const response = await docClient.send(command);
-    return response.Item;
+export const markVideoFailed = async (request: VideoKey): Promise<VideoEntity> => {
+    return markVideo(request, VideoStatusNum.Failed, undefined);
 }

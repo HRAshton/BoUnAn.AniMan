@@ -6,13 +6,14 @@ import { docClient } from '../../shared/repository';
 
 type GetEpisodesToMatchResult = Pick<VideoEntity, 'MyAnimeListId' | 'Dub' | 'Episode'>[];
 
-// Get first matching group and all its video keys
+// Get first matching group and all its video keys.
+// Does not support concurrency, should be run in a single instance.
 export const getEpisodesToMatch = async (): Promise<GetEpisodesToMatchResult> => {
     const groupResponse = await docClient.send(new ScanCommand({
         TableName: config.value.database.tableName,
         IndexName: config.value.database.matcherSecondaryIndexName,
-        Select: 'ALL_PROJECTED_ATTRIBUTES',
         Limit: 1,
+        Select: 'ALL_PROJECTED_ATTRIBUTES',
     }));
 
     if (!groupResponse.Items || groupResponse.Items.length === 0) {

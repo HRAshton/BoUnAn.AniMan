@@ -6,13 +6,14 @@ export interface VideoEntity {
     Dub: string;
     Episode: number;
 
-    CreatedAt: string;
-    UpdatedAt: string;
     Status: VideoStatusNum;
 
     AnimeKey: string;
     SortKey?: string;
     MatchingGroup?: string;
+
+    CreatedAt: string;
+    UpdatedAt: string;
 
     MessageId?: number;
     Scenes?: {
