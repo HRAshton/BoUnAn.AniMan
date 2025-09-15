@@ -9,7 +9,7 @@ import { docClient, getVideoKey } from '../../shared/repository';
 const markVideo = async (
     request: VideoKey,
     status: VideoStatusNum,
-    messageId: number | undefined,
+    messageId: number | null,
 ): Promise<VideoEntity> => {
     const updateCommand = new UpdateCommand({
         TableName: config.value.database.tableName,
@@ -45,5 +45,5 @@ export const markVideoDownloaded = async (request: VideoKey, messageId: number):
 }
 
 export const markVideoFailed = async (request: VideoKey): Promise<VideoEntity> => {
-    return markVideo(request, VideoStatusNum.Failed, undefined);
+    return markVideo(request, VideoStatusNum.Failed, null);
 }
