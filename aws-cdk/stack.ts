@@ -68,7 +68,7 @@ export class AniManCdkStack extends cfn.Stack {
             writeCapacity: 1,
         };
 
-        const filesTable = new dynamodb.Table(this, 'FilesTable', {
+        const filesTable = new dynamodb.Table(this, 'videos', {
             partitionKey: { name: 'primaryKey', type: dynamodb.AttributeType.STRING },
             removalPolicy: cfn.RemovalPolicy.RETAIN,
             deletionProtection: !this.isStage,
@@ -251,7 +251,7 @@ enum RequiredTopic {
 }
 
 enum RequiredIndex {
-    VideoKey = 'AnimeKey-Episode-index',
-    DownloadStatusKey = 'Status-SortKey-index2',
-    MatcherStatusKey = 'Matcher-CreatedAt-index',
+    VideoKey = 'AnimeKey-Episode-index_2',
+    DownloadStatusKey = 'Status-SortKey-index_2',
+    MatcherStatusKey = 'Matcher-CreatedAt-index_2',
 }
