@@ -29,7 +29,7 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
         return undefined;
     }
 
-    const updateStatusResult = await docClient.send(new UpdateCommand({
+    await docClient.send(new UpdateCommand({
         TableName: config.value.database.tableName,
         Key: { primaryKey: video.primaryKey },
         UpdateExpression: 'SET #S = :downloading, updatedAt = :now',
@@ -43,14 +43,12 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
             ':oldUpdatedAt': video.updatedAt,
             ':now': new Date().toISOString(),
         },
-        ReturnValues: 'ALL_NEW',
+        ReturnValues: 'NONE',
     }));
 
-    const videoEntity = updateStatusResult.Attributes as VideoEntity;
-
     return {
-        episode: videoEntity.episode,
-        myAnimeListId: videoEntity.myAnimeListId,
-        dub: videoEntity.dub,
+        episode: video.episode,
+        myAnimeListId: video.myAnimeListId,
+        dub: video.dub,
     };
 }
