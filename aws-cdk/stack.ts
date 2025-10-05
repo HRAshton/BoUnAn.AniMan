@@ -69,7 +69,7 @@ export class AniManCdkStack extends cfn.Stack {
         };
 
         const filesTable = new dynamodb.Table(this, 'FilesTable', {
-            partitionKey: { name: 'PrimaryKey', type: dynamodb.AttributeType.STRING },
+            partitionKey: { name: 'primaryKey', type: dynamodb.AttributeType.STRING },
             removalPolicy: cfn.RemovalPolicy.RETAIN,
             deletionProtection: !this.isStage,
             billingMode: dynamodb.BillingMode.PROVISIONED,
@@ -79,28 +79,28 @@ export class AniManCdkStack extends cfn.Stack {
 
         const animeKeySecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
             indexName: RequiredIndex.VideoKey,
-            partitionKey: { name: 'AnimeKey', type: dynamodb.AttributeType.STRING },
-            sortKey: { name: 'Episode', type: dynamodb.AttributeType.NUMBER },
+            partitionKey: { name: 'animeKey', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'episode', type: dynamodb.AttributeType.NUMBER },
             projectionType: dynamodb.ProjectionType.INCLUDE,
-            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'] as (keyof VideoEntity)[],
+            nonKeyAttributes: ['myAnimeListId', 'dub', 'episode'] as (keyof VideoEntity)[],
             ...indexCapacities,
         };
 
         const dwnSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
             indexName: RequiredIndex.DownloadStatusKey,
-            partitionKey: { name: 'Status', type: dynamodb.AttributeType.NUMBER },
-            sortKey: { name: 'SortKey', type: dynamodb.AttributeType.STRING },
+            partitionKey: { name: 'status', type: dynamodb.AttributeType.NUMBER },
+            sortKey: { name: 'sortKey', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
-            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode', 'UpdatedAt'] as (keyof VideoEntity)[],
+            nonKeyAttributes: ['myAnimeListId', 'dub', 'episode', 'updatedAt'] as (keyof VideoEntity)[],
             ...indexCapacities,
         };
 
         const matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
             indexName: RequiredIndex.MatcherStatusKey,
-            partitionKey: { name: 'MatchingGroup', type: dynamodb.AttributeType.STRING },
-            sortKey: { name: 'CreatedAt', type: dynamodb.AttributeType.STRING },
+            partitionKey: { name: 'matchingGroup', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'createdAt', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
-            nonKeyAttributes: ['MyAnimeListId', 'Dub', 'Episode'] as (keyof VideoEntity)[],
+            nonKeyAttributes: ['myAnimeListId', 'dub', 'episode'] as (keyof VideoEntity)[],
             ...indexCapacities,
         };
 

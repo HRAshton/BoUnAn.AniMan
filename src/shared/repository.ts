@@ -31,16 +31,16 @@ const getDownloaderKey = (
 
 export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
     const putCommands = videos.map(video => ({
-        PrimaryKey: getVideoKey(video),
-        AnimeKey: getAnimeKey(video.myAnimeListId, video.dub),
-        SortKey: getDownloaderKey(VideoStatusNum.Pending, false, new Date().toISOString(), video.episode),
-        MatchingGroup: getAnimeKey(video.myAnimeListId, video.dub),
-        MyAnimeListId: video.myAnimeListId,
-        Dub: video.dub,
-        Episode: video.episode,
-        Status: VideoStatusNum.Pending,
-        CreatedAt: new Date().toISOString(),
-        UpdatedAt: new Date().toISOString(),
+        primaryKey: getVideoKey(video),
+        animeKey: getAnimeKey(video.myAnimeListId, video.dub),
+        sortKey: getDownloaderKey(VideoStatusNum.Pending, false, new Date().toISOString(), video.episode),
+        matchingGroup: getAnimeKey(video.myAnimeListId, video.dub),
+        myAnimeListId: video.myAnimeListId,
+        dub: video.dub,
+        episode: video.episode,
+        status: VideoStatusNum.Pending,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
     } as VideoEntity));
 
     const batches = putCommands.reduce((acc, item, index) => {
@@ -71,9 +71,9 @@ export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
 export const increasePriority = async (videoKey: VideoKey): Promise<void> => {
     const command = new UpdateCommand({
         TableName: config.value.database.tableName,
-        Key: { PrimaryKey: getVideoKey(videoKey) },
-        UpdateExpression: 'SET SortKey = :newSortKey, UpdatedAt = :updatedAt',
-        ConditionExpression: 'attribute_exists(PrimaryKey)',
+        Key: { primaryKey: getVideoKey(videoKey) },
+        UpdateExpression: 'SET sortKey = :newSortKey, updatedAt = :updatedAt',
+        ConditionExpression: 'attribute_exists(primaryKey)',
         ExpressionAttributeValues: {
             ':newSortKey': getDownloaderKey(VideoStatusNum.Pending, true, new Date().toISOString(), videoKey.episode),
             ':updatedAt': new Date().toISOString(),

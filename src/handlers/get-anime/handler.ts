@@ -5,7 +5,6 @@ import { retry } from '../../common/ts/runtime/retry';
 import { config, initConfig } from '../../config/config';
 import { getExistingVideos, setToken } from '../../loan-api/src/loan-api-client';
 import { VideoStatusNum } from '../../models/video-status-num';
-import { publishingDetailsToCamelCase, scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
 import { videoStatusToStr } from '../../shared/helpers/video-status-to-str';
 import { increasePriority, insertVideo } from '../../shared/repository';
 import { getAnimeForUser, getRegisteredEpisodes } from './repository';
@@ -45,14 +44,14 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
     const video = await getAnimeForUser(request.videoKey);
     console.log('Video: ' + JSON.stringify(video));
 
-    switch (video?.Status) {
+    switch (video?.status) {
         case VideoStatusNum.Downloaded:
         case VideoStatusNum.Failed: {
             const response = {
-                status: videoStatusToStr(video.Status),
-                messageId: video.MessageId,
-                scenes: scenesToCamelCase(video.Scenes),
-                publishingDetails: publishingDetailsToCamelCase(video.PublishingDetails),
+                status: videoStatusToStr(video.status),
+                messageId: video.messageId,
+                scenes: video.scenes,
+                publishingDetails: video.publishingDetails,
             };
             console.log('Returning video as is: ' + JSON.stringify(response));
             return response;
@@ -63,7 +62,7 @@ const process = async (request: BotRequest): Promise<BotResponse> => {
             console.log('Returning video as pending or downloading');
             await increasePriority(request.videoKey);
             return {
-                status: videoStatusToStr(video.Status),
+                status: videoStatusToStr(video.status),
                 messageId: undefined,
                 scenes: undefined,
                 publishingDetails: undefined,

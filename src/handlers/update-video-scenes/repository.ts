@@ -7,34 +7,34 @@ import { docClient, getVideoKey } from '../../shared/repository';
 
 export const updateVideoScenes = async (request: MatcherResultRequest): Promise<void> => {
     const updateCommands = request.items.map(item => {
-        const scenes: VideoEntity['Scenes'] = {};
+        const scenes: VideoEntity['scenes'] = {};
 
         if (item.scenes.opening) {
-            scenes.Opening = {
-                Start: item.scenes.opening.start,
-                End: item.scenes.opening.end,
+            scenes.opening = {
+                start: item.scenes.opening.start,
+                end: item.scenes.opening.end,
             }
         }
 
         if (item.scenes.ending) {
-            scenes.Ending = {
-                Start: item.scenes.ending.start,
-                End: item.scenes.ending.end,
+            scenes.ending = {
+                start: item.scenes.ending.start,
+                end: item.scenes.ending.end,
             }
         }
 
         if (item.scenes.sceneAfterEnding) {
-            scenes.SceneAfterEnding = {
-                Start: item.scenes.sceneAfterEnding.start,
-                End: item.scenes.sceneAfterEnding.end,
+            scenes.sceneAfterEnding = {
+                start: item.scenes.sceneAfterEnding.start,
+                end: item.scenes.sceneAfterEnding.end,
             }
         }
 
         return new UpdateCommand({
             TableName: config.value.database.tableName,
-            Key: { PrimaryKey: getVideoKey(item.videoKey) },
-            ConditionExpression: 'attribute_exists(PrimaryKey)',
-            UpdateExpression: 'SET Scenes = :scenes, UpdatedAt = :updatedAt REMOVE MatchingGroup',
+            Key: { primaryKey: getVideoKey(item.videoKey) },
+            ConditionExpression: 'attribute_exists(primaryKey)',
+            UpdateExpression: 'SET scenes = :scenes, updatedAt = :updatedAt REMOVE matchingGroup',
             ExpressionAttributeValues: {
                 ':scenes': scenes,
                 ':updatedAt': new Date().toISOString(),

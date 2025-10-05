@@ -5,7 +5,7 @@ import { config } from '../../config/config';
 import { docClient, getVideoKey } from '../../shared/repository';
 
 const GET_OPERATION_LIMIT = 100;
-const TABLE_PRIMARY_KEY = 'PrimaryKey';
+const TABLE_PRIMARY_KEY = 'primaryKey';
 
 export const getExistingVideos = async (videoKeys: VideoKey[]): Promise<VideoKey[]> => {
     const keyValuePairs = Object.fromEntries(videoKeys.map(x => [getVideoKey(x), x]));

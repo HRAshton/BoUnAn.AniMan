@@ -1,38 +1,38 @@
 ﻿import { VideoStatusNum } from './video-status-num';
 
 export interface VideoEntity {
-    PrimaryKey: string;
-    MyAnimeListId: number;
-    Dub: string;
-    Episode: number;
+    primaryKey: string;
+    myAnimeListId: number;
+    dub: string;
+    episode: number;
 
-    Status: VideoStatusNum;
+    status: VideoStatusNum;
 
-    AnimeKey: string;
-    SortKey?: string;
-    MatchingGroup?: string;
+    animeKey: string;
+    sortKey?: string;
+    matchingGroup?: string;
 
-    CreatedAt: string;
-    UpdatedAt: string;
+    createdAt: string;
+    updatedAt: string;
 
-    MessageId?: number;
-    Scenes?: {
-        Opening?: {
-            Start: number;
-            End: number;
+    messageId?: number;
+    scenes?: {
+        opening?: {
+            start: number;
+            end: number;
         };
-        Ending?: {
-            Start: number;
-            End: number;
+        ending?: {
+            start: number;
+            end: number;
         };
-        SceneAfterEnding?: {
-            Start: number;
-            End: number;
+        sceneAfterEnding?: {
+            start: number;
+            end: number;
         };
     };
 
-    PublishingDetails?: {
-        ThreadId: number;
-        MessageId: number;
+    publishingDetails?: {
+        threadId: number;
+        messageId: number;
     };
 }

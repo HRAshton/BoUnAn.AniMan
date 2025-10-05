@@ -13,13 +13,13 @@ const markVideo = async (
 ): Promise<VideoEntity> => {
     const updateCommand = new UpdateCommand({
         TableName: config.value.database.tableName,
-        Key: { PrimaryKey: getVideoKey(request) },
-        ConditionExpression: 'attribute_exists(PrimaryKey)',
+        Key: { primaryKey: getVideoKey(request) },
+        ConditionExpression: 'attribute_exists(primaryKey)',
         UpdateExpression: 'SET #status = :status, #messageId = :messageId, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
-            '#status': 'Status',
-            '#messageId': 'MessageId',
-            '#updatedAt': 'UpdatedAt',
+            '#status': 'status',
+            '#messageId': 'messageId',
+            '#updatedAt': 'updatedAt',
         },
         ExpressionAttributeValues: {
             ':status': status,
@@ -31,7 +31,7 @@ const markVideo = async (
 
     if (status === VideoStatusNum.Downloaded) {
         updateCommand.input.UpdateExpression += ' REMOVE #sortKey';
-        updateCommand.input.ExpressionAttributeNames!['#sortKey'] = 'SortKey';
+        updateCommand.input.ExpressionAttributeNames!['#sortKey'] = 'sortKey';
     }
 
     const result = await docClient.send(updateCommand);

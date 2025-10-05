@@ -4,7 +4,6 @@ import { DownloaderResultRequest } from '../../common/ts/interfaces';
 import { retry } from '../../common/ts/runtime/retry';
 import { initConfig } from '../../config/config';
 import { VideoEntity } from '../../models/video-entity';
-import { publishingDetailsToCamelCase, scenesToCamelCase } from '../../shared/helpers/camelCaseHelper';
 import { markVideoDownloaded, markVideoFailed } from './repository';
 import { sendVideoDownloadedNotification } from './sns-client';
 
@@ -23,8 +22,8 @@ const notify = async (request: DownloaderResultRequest, videoEntity: VideoEntity
     const notification = {
         videoKey: request.videoKey,
         messageId: request.messageId,
-        scenes: scenesToCamelCase(videoEntity.Scenes),
-        publishingDetails: publishingDetailsToCamelCase(videoEntity.PublishingDetails),
+        scenes: videoEntity.scenes,
+        publishingDetails: videoEntity.publishingDetails,
     };
 
     await sendVideoDownloadedNotification(notification);
