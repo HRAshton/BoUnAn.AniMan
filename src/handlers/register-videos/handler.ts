@@ -33,7 +33,10 @@ const process = async (request: RegisterVideosRequest): Promise<void> => {
 export const handler: Handler<RegisterVideosRequest> = async (request) => {
     await initConfig();
     if (!request || !request.items || request.items.length === 0
-        || request.items.some(x => !x.videoKey?.myAnimeListId || !x.videoKey?.dub || !x.videoKey?.episode)) {
+        || request.items.some(x =>
+            !x.videoKey?.myAnimeListId
+            || !x.videoKey?.dub
+            || x.videoKey?.episode === undefined)) {
         throw new Error('Invalid request: ' + JSON.stringify(request));
     }
 
