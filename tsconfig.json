@@ -8,5 +8,8 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true
-  }
+  },
+  "exclude": [
+    "src/common/ts/runtime/lambda-client.ts"
+  ]
 }
