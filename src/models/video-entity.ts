@@ -1,4 +1,5 @@
-﻿import { VideoStatusNum } from './video-status-num';
+﻿import { MatchingStatusNum } from './matching-status-num';
+import { VideoStatusNum } from './video-status-num';
 
 export interface VideoEntity {
     primaryKey: string;
@@ -7,6 +8,7 @@ export interface VideoEntity {
     episode: number;
 
     status: VideoStatusNum;
+    matchingStatus?: MatchingStatusNum; // TODO: make required in the future
 
     animeKey: string;
     sortKey?: string;

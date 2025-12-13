@@ -43,7 +43,22 @@ const main = async () => {
                         start: 0,
                         end: 10,
                     },
-                }
+                },
+            },
+            {
+                videoKey: {
+                    myAnimeListId: myAnimeListId,
+                    dub: dub,
+                    episode: episode + 1,
+                },
+                scenes: {},
+            },
+            {
+                videoKey: {
+                    myAnimeListId: myAnimeListId,
+                    dub: dub,
+                    episode: episode + 2,
+                },
             },
         ],
     }, null as any, null as any);
