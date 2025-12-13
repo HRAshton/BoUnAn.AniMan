@@ -3,6 +3,7 @@ import { BatchWriteCommand, DynamoDBDocumentClient, UpdateCommand } from '@aws-s
 
 import { VideoKey } from '../common/ts/interfaces';
 import { config } from '../config/config';
+import { MatchingStatusNum } from '../models/matching-status-num';
 import { VideoEntity } from '../models/video-entity';
 import { VideoStatusNum } from '../models/video-status-num';
 
@@ -39,6 +40,7 @@ export const insertVideo = async (videos: VideoKey[]): Promise<void> => {
         dub: video.dub,
         episode: video.episode,
         status: VideoStatusNum.Pending,
+        matchingStatus: MatchingStatusNum.Pending,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     } as VideoEntity));

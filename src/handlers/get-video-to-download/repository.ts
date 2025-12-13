@@ -9,7 +9,7 @@ type GetEpisodeToDownloadResult = Pick<VideoEntity, 'myAnimeListId' | 'dub' | 'e
 
 // Get first video to download and set its status to Downloading.
 export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloadResult | undefined> => {
-    const videoToDownload = await docClient.send(new ScanCommand({
+    const pendingVideosResponse = await docClient.send(new ScanCommand({
         TableName: config.value.database.tableName,
         IndexName: config.value.database.secondaryIndexName,
         Limit: 10, // Scan a few items to reduce chance of empty result
@@ -20,11 +20,10 @@ export const getEpisodeToDownloadAndLock = async (): Promise<GetEpisodeToDownloa
         ExpressionAttributeValues: {
             ':pending': VideoStatusNum.Pending,
         },
-        Select: 'SPECIFIC_ATTRIBUTES',
-        ProjectionExpression: 'primaryKey, updatedAt, episode, myAnimeListId, dub',
+        Select: 'ALL_PROJECTED_ATTRIBUTES',
     }));
 
-    const video = videoToDownload.Items?.[0] as Pick<VideoEntity, 'primaryKey' | 'updatedAt' | 'episode' | 'myAnimeListId' | 'dub'> | undefined;
+    const video = pendingVideosResponse.Items?.[0] as Pick<VideoEntity, 'primaryKey' | 'updatedAt' | 'myAnimeListId' | 'dub' | 'episode'> | undefined;
     if (!video) {
         return undefined;
     }

@@ -22,67 +22,6 @@ const main = async () => {
 
     const s2 = await getSeriesToMatch(null as any, null as any, null as any);
     console.log(s2);
-
-    const s3 = await getVideoToDownload(null as any, null as any, null as any);
-    console.log(s3);
-
-    const s4 = await updateVideoScenes({
-        items: [
-            {
-                videoKey: {
-                    myAnimeListId: myAnimeListId,
-                    dub: dub,
-                    episode: episode,
-                },
-                scenes: {
-                    opening: {
-                        start: 0,
-                        end: 10,
-                    },
-                    ending: {
-                        start: 0,
-                        end: 10,
-                    },
-                },
-            },
-            {
-                videoKey: {
-                    myAnimeListId: myAnimeListId,
-                    dub: dub,
-                    episode: episode + 1,
-                },
-                scenes: {},
-            },
-            {
-                videoKey: {
-                    myAnimeListId: myAnimeListId,
-                    dub: dub,
-                    episode: episode + 2,
-                },
-            },
-        ],
-    }, null as any, null as any);
-    console.log(s4);
-
-    const s5 = await updateVideoStatus({
-        videoKey: {
-            myAnimeListId: myAnimeListId,
-            dub: dub,
-            episode: episode,
-        },
-        messageId: 1,
-    }, null as any, null as any);
-    console.log(s5);
-
-    const s6 = await getAnime({
-        videoKey: {
-            myAnimeListId: myAnimeListId,
-            dub: dub,
-            episode: 7,
-        },
-    }, null as any, null as any);
-    console.log(s6);
-
 }
 
 main();

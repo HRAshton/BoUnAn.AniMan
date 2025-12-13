@@ -95,18 +95,28 @@ export class AniManCdkStack extends cfn.Stack {
             ...indexCapacities,
         };
 
-        const matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
-            indexName: RequiredIndex.MatcherStatusKey,
+        const matcherSecondaryIndex2: dynamodb.GlobalSecondaryIndexProps = {
+            indexName: 'Matcher-CreatedAt-index_2',
             partitionKey: { name: 'matchingGroup', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'createdAt', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE,
             nonKeyAttributes: ['myAnimeListId', 'dub', 'episode'] as (keyof VideoEntity)[],
+            ...indexCapacities,
+        }; // todo: delete
+
+        const matcherSecondaryIndex: dynamodb.GlobalSecondaryIndexProps = {
+            indexName: RequiredIndex.MatcherStatusKey,
+            partitionKey: { name: 'matchingStatus', type: dynamodb.AttributeType.NUMBER },
+            sortKey: { name: 'matchingGroup', type: dynamodb.AttributeType.STRING },
+            projectionType: dynamodb.ProjectionType.INCLUDE,
+            nonKeyAttributes: ['myAnimeListId', 'dub', 'episode', 'updatedAt'] as (keyof VideoEntity)[],
             ...indexCapacities,
         };
 
         filesTable.addGlobalSecondaryIndex(animeKeySecondaryIndex);
         filesTable.addGlobalSecondaryIndex(dwnSecondaryIndex);
         filesTable.addGlobalSecondaryIndex(matcherSecondaryIndex);
+        filesTable.addGlobalSecondaryIndex(matcherSecondaryIndex2);
 
         return {
             table: filesTable,
@@ -253,5 +263,5 @@ enum RequiredTopic {
 enum RequiredIndex {
     VideoKey = 'AnimeKey-Episode-index_2',
     DownloadStatusKey = 'Status-SortKey-index_2',
-    MatcherStatusKey = 'Matcher-CreatedAt-index_2',
+    MatcherStatusKey = 'Matcher-CreatedAt-index_3',
 }
