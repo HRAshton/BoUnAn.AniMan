@@ -6,6 +6,10 @@ export default [
     {
         ignores: ['node_modules', 'cdk.out'],
     },
+    {
+        // This is needed to avoid linting errors in unused files
+        ignores: ['src/common/ts/runtime/lambda-client.ts'],
+    },
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
     {
